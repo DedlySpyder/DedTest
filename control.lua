@@ -1,5 +1,4 @@
 local Logger = require("__DedLib__/modules/logger").create()
-local testRunner = require("tests/main")
 
 local DedLib = require("tests/dedlib/main")
 
