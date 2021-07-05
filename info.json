@@ -1,0 +1,13 @@
+{
+  "name": "DedTest",
+  "version": "0.0.1",
+  "title": "DedTest",
+  "author": "DedlySpyder",
+  "contact": "DedlySpyder@gmail.com",
+  "homepage": "",
+  "description": "Tester for my mods (private)",
+  "dependencies": [
+    "~ DedLib"
+  ],
+  "factorio_version": "1.1"
+}
