@@ -82,8 +82,9 @@ for objectName, generateArgsFunc in pairs(LUA_OBJECTS) do -- Just making sure th
 end
 
 local toStringTest = function(testNameSuffix, argOrGenerateArgsFunc, expected, block)
+    local argType = type(argOrGenerateArgsFunc)
     local test = Util.ternary(
-            type(argOrGenerateArgsFunc) == "function",
+            argType == "function",
             function(object)
                 local actual = Stringify.to_string(object, block)
                 Assert.assert_equals(expected, actual, "Input failed: " .. serpent.line(object))
@@ -95,7 +96,7 @@ local toStringTest = function(testNameSuffix, argOrGenerateArgsFunc, expected, b
     )
 
     StringifyTests["test_to_string__" .. testNameSuffix] = {
-        generateArgsFunc = argOrGenerateArgsFunc,
+        generateArgsFunc = Util.ternary(argType == "function", argOrGenerateArgsFunc, nil),
         func = test
     }
 end
