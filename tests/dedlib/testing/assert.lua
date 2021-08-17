@@ -14,6 +14,8 @@ end
 
 local test_assert = function(assertFuncName, x, y, wantSuccess)
     local s, e = pcall(Assert[assertFuncName], x, y)
+    if type(x) == "function" then x = "FUNCTION" end
+    if type(y) == "function" then y = "FUNCTION" end
     if s then
         if wantSuccess then
             Logger:debug("Assert func <" .. assertFuncName .. ">, Expected success, and got success <" .. serpent.line(x) .. "> to <" .. serpent.line(y) .. ">")
@@ -258,6 +260,55 @@ return function()
     local assertContainsExactlyTableRef = {a = "foo"}
     test_assert("assert_contains_exactly", assertContainsExactlyTableRef, {assertContainsExactlyTableRef, {b = "bar"}, {c = "baz"}}, true)
 
+
+    Logger:debug("Testing assert_throws_error - no expected error")
+    test_assert("assert_throws_error", function() end, nil, false)
+    test_assert("assert_throws_error", function() error("foo") end, nil, true)
+
+    Logger:debug("Testing assert_throws_error - with expected error - string")
+    test_assert("assert_throws_error", function() error("foo") end, "foo", true)
+    test_assert("assert_throws_error", function() error("foo") end, "bar", false)
+
+    Logger:debug("Testing assert_throws_error - with expected error - int")
+    test_assert("assert_throws_error", function() error(42) end, 42, true)
+    test_assert("assert_throws_error", function() error(42) end, 1, false)
+
+    Logger:debug("Testing assert_throws_error - with expected error - float")
+    test_assert("assert_throws_error", function() error(4.2) end, 4.2, true)
+    test_assert("assert_throws_error", function() error(4.2) end, 0.5, false)
+
+    Logger:debug("Testing assert_throws_error - with expected error - table")
+    test_assert("assert_throws_error", function() error({"foo"}) end, {"foo"}, true)
+    test_assert("assert_throws_error", function() error({"foo"}) end, {"bar"}, false)
+    test_assert("assert_throws_error", function() error({a = "foo"}) end, {a = "foo"}, true)
+    test_assert("assert_throws_error", function() error({a = "foo"}) end, {a = "bar"}, false)
+
+
+    Logger:debug("Testing assert_throws_error_exactly - no expected error")
+    test_assert("assert_throws_error_exactly", function() end, nil, false)
+    test_assert("assert_throws_error_exactly", function() error("foo") end, nil, true)
+
+    Logger:debug("Testing assert_throws_error_exactly - with expected error - string")
+    test_assert("assert_throws_error_exactly", function() error("foo") end, "foo", true)
+    test_assert("assert_throws_error_exactly", function() error("foo") end, "bar", false)
+
+    Logger:debug("Testing assert_throws_error_exactly - with expected error - int")
+    test_assert("assert_throws_error_exactly", function() error(42) end, 42, true)
+    test_assert("assert_throws_error_exactly", function() error(42) end, 1, false)
+
+    Logger:debug("Testing assert_throws_error_exactly - with expected error - float")
+    test_assert("assert_throws_error_exactly", function() error(4.2) end, 4.2, true)
+    test_assert("assert_throws_error_exactly", function() error(4.2) end, 0.5, false)
+
+    Logger:debug("Testing assert_throws_error_exactly - with expected error - table")
+    test_assert("assert_throws_error_exactly", function() error({"foo"}) end, {"foo"}, false)
+    test_assert("assert_throws_error_exactly", function() error({"foo"}) end, {"bar"}, false)
+    test_assert("assert_throws_error_exactly", function() error({a = "foo"}) end, {a = "foo"}, false)
+    test_assert("assert_throws_error_exactly", function() error({a = "foo"}) end, {a = "bar"}, false)
+
+    Logger:debug("Testing assert_throws_error_exactly - with expected error - table same reference")
+    local assertThrowsExactlyTableRef = {a = "foo"}
+    test_assert("assert_throws_error_exactly", function() error(assertThrowsExactlyTableRef) end, assertThrowsExactlyTableRef, true)
 
 
     -- Other tests can depend on Assert working properly, so fail early if it is failing
