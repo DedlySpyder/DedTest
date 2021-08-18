@@ -106,11 +106,92 @@ return function()
 
 
     -- Test.create_multiple() validations
-    -- create_multiple
-    -- - function arg
-    -- - non-table/non-function should fail
-    -- - list table of tests
-    -- - map table of tests
+    add_validation("create_multiple__function_arg", function()
+        local args = function() end
+        local tests = Test.create_multiple(args)
+
+        Assert.assert_equals(1, #tests, "Wrong number of tests returned")
+        Assert.assert_equals_exactly(args, tests[1].func, "Function as only arg did not create test")
+    end)
+    add_validation("create_multiple__failed_with_number", function()
+        Assert.assert_throws_error(
+                Test.create_multiple,
+                "foo",
+                "Failed to create tests of type string (expected table or function)",
+                "Create multiple did not fail with bad args, number"
+        )
+    end)
+    add_validation("create_multiple__failed_with_number", function()
+        Assert.assert_throws_error(
+                Test.create_multiple,
+                42,
+                "Failed to create tests of type number (expected table or function)",
+                "Create multiple did not fail with bad args, number"
+        )
+    end)
+    add_validation("create_multiple__failed_with_boolean", function()
+        Assert.assert_throws_error(
+                Test.create_multiple,
+                true,
+                "Failed to create tests of type boolean (expected table or function)",
+                "Create multiple did not fail with bad args, boolean"
+        )
+    end)
+    add_validation("create_multiple__failed_with_nil", function()
+        Assert.assert_throws_error(
+                Test.create_multiple,
+                nil,
+                "Failed to create tests of type nil (expected table or function)",
+                "Create multiple did not fail with bad args, nil"
+        )
+    end)
+
+    add_validation("create_multiple__table_empty", function()
+        local args = {}
+        local tests = Test.create_multiple(args)
+
+        Assert.assert_equals(0, #tests, "Wrong number of tests returned")
+    end)
+    add_validation("create_multiple__table_list_1", function()
+        local args = {{}}
+        local tests = Test.create_multiple(args)
+
+        Assert.assert_equals(1, #tests, "Wrong number of tests returned")
+        Assert.assert_equals_exactly("Test", tests[1].__which, "Test not returned")
+    end)
+    add_validation("create_multiple__table_list_2", function()
+        local args = {{}, {}}
+        local tests = Test.create_multiple(args)
+
+        Assert.assert_equals(2, #tests, "Wrong number of tests returned")
+        Assert.assert_equals_exactly("Test", tests[1].__which, "Test not returned")
+    end)
+    add_validation("create_multiple__table_map_1", function()
+        local args = {test_foo = {}}
+        local tests = Test.create_multiple(args)
+
+        Assert.assert_equals(1, #tests, "Wrong number of tests returned")
+        Assert.assert_equals_exactly("Test", tests[1].__which, "Test not returned")
+        Assert.assert_equals_exactly("test_foo", tests[1].name, "Test name wrong")
+    end)
+    add_validation("create_multiple__table_map_2", function()
+        local args = {test_foo = {}, test_bar = {}}
+        local tests = Test.create_multiple(args)
+
+        Assert.assert_equals(2, #tests, "Wrong number of tests returned")
+        Assert.assert_equals_exactly("Test", tests[1].__which, "Test not returned")
+        Assert.assert_equals_exactly("test_foo", tests[1].name, "Test name wrong")
+        Assert.assert_equals_exactly("test_bar", tests[2].name, "Test name wrong")
+    end)
+    add_validation("create_multiple__table_map_ignore_non_test", function()
+        local args = {test_foo = {}, bar = {}}
+        local tests = Test.create_multiple(args)
+
+        Assert.assert_equals(1, #tests, "Wrong number of tests returned")
+        Assert.assert_equals_exactly("Test", tests[1].__which, "Test not returned")
+        Assert.assert_equals_exactly("test_foo", tests[1].name, "Test name wrong")
+    end)
+
     -- valid_name
     -- generate name
     -- validate_property (or validate?) (or I could do this through create) for each one, a good and a bad, and force
