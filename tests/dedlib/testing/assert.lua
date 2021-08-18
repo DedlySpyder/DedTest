@@ -41,6 +41,36 @@ local test_assert = function(assertFuncName, x, y, wantSuccess)
     end
 end
 
+local test_assert_3 = function(assertFuncName, x, y, z, wantSuccess)
+    local s, e = pcall(Assert[assertFuncName], x, y, z)
+    if type(x) == "function" then x = "FUNCTION" end
+    if type(y) == "function" then y = "FUNCTION" end
+    if type(z) == "function" then z = "FUNCTION" end
+    if s then
+        if wantSuccess then
+            Logger:debug("Assert func <" .. assertFuncName .. ">, Expected success, and got success: <" .. serpent.line(x) .. ">, <" .. serpent.line(y) .. ">, <" .. serpent.line(z) .. ">")
+            increment_test_succeeded()
+        else
+            Logger:fatal("Assert func <" .. assertFuncName .. ">, Expected failure, but got success: <" .. serpent.line(x) .. ">, <" .. serpent.line(y) .. ">, <" .. serpent.line(z) .. ">")
+            local info = debug.getinfo(2, "Sl")
+            Logger:debug("Failed validation at: %s:%s", info.short_src, info.currentline)
+            increment_test_failed()
+        end
+    else
+        if wantSuccess then
+            Logger:fatal("Assert func <" .. assertFuncName .. ">, Expected success, but got failure: <" .. serpent.line(x) .. ">, <" .. serpent.line(y) .. ">, <" .. serpent.line(z) .. ">")
+            local info = debug.getinfo(2, "Sl")
+            Logger:debug("Failed validation at: %s:%s", info.short_src, info.currentline)
+            Logger:trace(e)
+            increment_test_failed()
+        else
+            Logger:debug("Assert func <" .. assertFuncName .. ">, Expected failure, and got failure: <" .. serpent.line(x) .. ">, <" .. serpent.line(y) .. ">, <" .. serpent.line(z) .. ">")
+            Logger:trace(e)
+            increment_test_succeeded()
+        end
+    end
+end
+
 return function()
     local testAssertFailed = function(message, assertType, assertVar1Name, assertVar1Value, assertVar2Name, assertVar2Value, testErrorFunc)
         local s, e = pcall(Assert._fail, message, assertType, assertVar1Name, assertVar1Value, assertVar2Name, assertVar2Value)
@@ -266,53 +296,138 @@ return function()
 
 
     Logger:debug("Testing assert_throws_error - no expected error")
-    test_assert("assert_throws_error", function() end, nil, false)
-    test_assert("assert_throws_error", function() error("foo") end, nil, true)
+    test_assert_3("assert_throws_error", function() end, nil, nil, false)
+    test_assert_3("assert_throws_error", function() error("foo") end, nil, nil, true)
 
     Logger:debug("Testing assert_throws_error - with expected error - string")
-    test_assert("assert_throws_error", function() error("foo") end, "foo", true)
-    test_assert("assert_throws_error", function() error("foo") end, "bar", false)
+    test_assert_3("assert_throws_error", function() error("foo") end, nil, "foo", true)
+    test_assert_3("assert_throws_error", function() error("foo") end, nil, "bar", false)
 
     Logger:debug("Testing assert_throws_error - with expected error - int")
-    test_assert("assert_throws_error", function() error(42) end, 42, true)
-    test_assert("assert_throws_error", function() error(42) end, 1, false)
+    test_assert_3("assert_throws_error", function() error(42) end, nil, 42, true)
+    test_assert_3("assert_throws_error", function() error(42) end, nil, 1, false)
 
     Logger:debug("Testing assert_throws_error - with expected error - float")
-    test_assert("assert_throws_error", function() error(4.2) end, 4.2, true)
-    test_assert("assert_throws_error", function() error(4.2) end, 0.5, false)
+    test_assert_3("assert_throws_error", function() error(4.2) end, nil, 4.2, true)
+    test_assert_3("assert_throws_error", function() error(4.2) end, nil, 0.5, false)
 
     Logger:debug("Testing assert_throws_error - with expected error - table")
-    test_assert("assert_throws_error", function() error({"foo"}) end, {"foo"}, true)
-    test_assert("assert_throws_error", function() error({"foo"}) end, {"bar"}, false)
-    test_assert("assert_throws_error", function() error({a = "foo"}) end, {a = "foo"}, true)
-    test_assert("assert_throws_error", function() error({a = "foo"}) end, {a = "bar"}, false)
+    test_assert_3("assert_throws_error", function() error({"foo"}) end, nil, {"foo"}, true)
+    test_assert_3("assert_throws_error", function() error({"foo"}) end, nil, {"bar"}, false)
+    test_assert_3("assert_throws_error", function() error({a = "foo"}) end, nil, {a = "foo"}, true)
+    test_assert_3("assert_throws_error", function() error({a = "foo"}) end, nil, {a = "bar"}, false)
+
+    Logger:debug("Testing assert_throws_error - has args")
+    test_assert_3("assert_throws_error", function(arg0)
+        if arg0 ~= "foo" then error("failed") end
+        error("succeeded")
+    end, "foo", "failed", false)
+    test_assert_3("assert_throws_error", function(arg0)
+        if arg0 ~= 42 then error("failed") end
+        error("succeeded")
+    end, 42, "failed", false)
+    test_assert_3("assert_throws_error", function(arg0)
+        if arg0 ~= 4.2 then error("failed") end
+        error("succeeded")
+    end, 4.2, "failed", false)
+    test_assert_3("assert_throws_error", function(arg0)
+        if arg0 ~= "foo" then error("failed") end
+        error("succeeded")
+    end, {"foo"}, "failed", false)
+    test_assert_3("assert_throws_error", function(arg0)
+        if arg0[1]~= "foo" then error("failed") end
+        error("succeeded")
+    end, {{ "foo" }}, "failed", false)
+    test_assert_3("assert_throws_error", function(arg0, arg1)
+        if arg0 ~= "foo" then error("failed") end
+        if arg1 ~= "bar" then error("failed") end
+        error("succeeded")
+    end, {"foo", "bar"}, "failed", false)
+    test_assert_3("assert_throws_error", function(arg0, arg1)
+        if arg0 ~= nil then error("failed") end
+        if arg1 ~= nil then error("failed") end
+        error("succeeded")
+    end, {f = "foo", b = "bar"}, "failed", false)
+    test_assert_3("assert_throws_error", function(arg0, arg1)
+        if arg0 ~= "foo" then error("failed") end
+        if arg1 ~= nil then error("failed") end
+        error("succeeded")
+    end, {"foo", b = "bar"}, "failed", false)
+    test_assert_3("assert_throws_error", function(arg0, arg1)
+        if arg0 ~= "bar" then error("failed") end
+        if arg1 ~= nil then error("failed") end
+        error("succeeded")
+    end, {f = "foo", "bar"}, "failed", false)
 
 
     Logger:debug("Testing assert_throws_error_exactly - no expected error")
-    test_assert("assert_throws_error_exactly", function() end, nil, false)
-    test_assert("assert_throws_error_exactly", function() error("foo") end, nil, true)
+    test_assert_3("assert_throws_error_exactly", function() end, nil, nil, false)
+    test_assert_3("assert_throws_error_exactly", function() error("foo") end, nil, nil, true)
 
     Logger:debug("Testing assert_throws_error_exactly - with expected error - string")
-    test_assert("assert_throws_error_exactly", function() error("foo") end, "foo", true)
-    test_assert("assert_throws_error_exactly", function() error("foo") end, "bar", false)
+    test_assert_3("assert_throws_error_exactly", function() error("foo") end, nil, "foo", true)
+    test_assert_3("assert_throws_error_exactly", function() error("foo") end, nil, "bar", false)
 
     Logger:debug("Testing assert_throws_error_exactly - with expected error - int")
-    test_assert("assert_throws_error_exactly", function() error(42) end, 42, true)
-    test_assert("assert_throws_error_exactly", function() error(42) end, 1, false)
+    test_assert_3("assert_throws_error_exactly", function() error(42) end, nil, 42, true)
+    test_assert_3("assert_throws_error_exactly", function() error(42) end, nil, 1, false)
 
     Logger:debug("Testing assert_throws_error_exactly - with expected error - float")
-    test_assert("assert_throws_error_exactly", function() error(4.2) end, 4.2, true)
-    test_assert("assert_throws_error_exactly", function() error(4.2) end, 0.5, false)
+    test_assert_3("assert_throws_error_exactly", function() error(4.2) end, nil, 4.2, true)
+    test_assert_3("assert_throws_error_exactly", function() error(4.2) end, nil, 0.5, false)
 
     Logger:debug("Testing assert_throws_error_exactly - with expected error - table")
-    test_assert("assert_throws_error_exactly", function() error({"foo"}) end, {"foo"}, false)
-    test_assert("assert_throws_error_exactly", function() error({"foo"}) end, {"bar"}, false)
-    test_assert("assert_throws_error_exactly", function() error({a = "foo"}) end, {a = "foo"}, false)
-    test_assert("assert_throws_error_exactly", function() error({a = "foo"}) end, {a = "bar"}, false)
+    test_assert_3("assert_throws_error_exactly", function() error({"foo"}) end, nil, {"foo"}, false)
+    test_assert_3("assert_throws_error_exactly", function() error({"foo"}) end, nil, {"bar"}, false)
+    test_assert_3("assert_throws_error_exactly", function() error({a = "foo"}) end, nil, {a = "foo"}, false)
+    test_assert_3("assert_throws_error_exactly", function() error({a = "foo"}) end, nil, {a = "bar"}, false)
 
     Logger:debug("Testing assert_throws_error_exactly - with expected error - table same reference")
     local assertThrowsExactlyTableRef = {a = "foo"}
-    test_assert("assert_throws_error_exactly", function() error(assertThrowsExactlyTableRef) end, assertThrowsExactlyTableRef, true)
+    test_assert_3("assert_throws_error_exactly", function() error(assertThrowsExactlyTableRef) end, nil, assertThrowsExactlyTableRef, true)
+
+    Logger:debug("Testing assert_throws_error_exactly - has args")
+    test_assert_3("assert_throws_error_exactly", function(arg0)
+        if arg0 ~= "foo" then error("failed") end
+        error("succeeded")
+    end, "foo", "failed", false)
+    test_assert_3("assert_throws_error_exactly", function(arg0)
+        if arg0 ~= 42 then error("failed") end
+        error("succeeded")
+    end, 42, "failed", false)
+    test_assert_3("assert_throws_error_exactly", function(arg0)
+        if arg0 ~= 4.2 then error("failed") end
+        error("succeeded")
+    end, 4.2, "failed", false)
+    test_assert_3("assert_throws_error_exactly", function(arg0)
+        if arg0 ~= "foo" then error("failed") end
+        error("succeeded")
+    end, {"foo"}, "failed", false)
+    test_assert_3("assert_throws_error_exactly", function(arg0)
+        if arg0[1]~= "foo" then error("failed") end
+        error("succeeded")
+    end, {{ "foo" }}, "failed", false)
+
+    test_assert_3("assert_throws_error_exactly", function(arg0, arg1)
+        if arg0 ~= "foo" then error("failed") end
+        if arg1 ~= "bar" then error("failed") end
+        error("succeeded")
+    end, {"foo", "bar"}, "failed", false)
+    test_assert_3("assert_throws_error_exactly", function(arg0, arg1)
+        if arg0 ~= nil then error("failed") end
+        if arg1 ~= nil then error("failed") end
+        error("succeeded")
+    end, {f = "foo", b = "bar"}, "failed", false)
+    test_assert_3("assert_throws_error_exactly", function(arg0, arg1)
+        if arg0 ~= "foo" then error("failed") end
+        if arg1 ~= nil then error("failed") end
+        error("succeeded")
+    end,{"foo", b = "bar"}, "failed", false)
+    test_assert_3("assert_throws_error_exactly", function(arg0, arg1)
+        if arg0 ~= "bar" then error("failed") end
+        if arg1 ~= nil then error("failed") end
+        error("succeeded")
+    end, {f = "foo", "bar"}, "failed", false)
 
 
     -- Other tests can depend on Assert working properly, so fail early if it is failing
