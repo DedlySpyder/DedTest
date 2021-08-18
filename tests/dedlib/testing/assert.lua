@@ -2,7 +2,7 @@ local Logger = require("__DedLib__/modules/logger").create("Testing")
 local Assert = require("__DedLib__/modules/testing/assert")
 local Util = require("__DedLib__/modules/util")
 
-local test_counts = { succeeded = 0, failed = 0}
+local test_counts = {succeeded = 0, failed = 0}
 
 local increment_test_failed = function()
     test_counts["failed"] = test_counts["failed"] + 1
@@ -22,11 +22,15 @@ local test_assert = function(assertFuncName, x, y, wantSuccess)
             increment_test_succeeded()
         else
             Logger:fatal("Assert func <" .. assertFuncName .. ">, Expected failure, but got success <" .. serpent.line(x) .. "> to <" .. serpent.line(y) .. ">")
+            local info = debug.getinfo(2, "Sl")
+            Logger:debug("Failed validation at: %s:%s", info.short_src, info.currentline)
             increment_test_failed()
         end
     else
         if wantSuccess then
             Logger:fatal("Assert func <" .. assertFuncName .. ">, Expected success, but got failure <" .. serpent.line(x) .. "> to <" .. serpent.line(y) .. ">")
+            local info = debug.getinfo(2, "Sl")
+            Logger:debug("Failed validation at: %s:%s", info.short_src, info.currentline)
             Logger:trace(e)
             increment_test_failed()
         else
