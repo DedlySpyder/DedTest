@@ -60,9 +60,17 @@ return function()
     add_validation("create__failed_with_number", function()
         Assert.assert_throws_error(
                 Test.create,
+                "foo",
+                "Failed to create test of type string (expected table or function)",
+                "Create did not fail with bad args, number"
+        )
+    end)
+    add_validation("create__failed_with_number", function()
+        Assert.assert_throws_error(
+                Test.create,
                 42,
                 "Failed to create test of type number (expected table or function)",
-                "Create did not fail with bad args"
+                "Create did not fail with bad args, number"
         )
     end)
     add_validation("create__failed_with_boolean", function()
@@ -70,7 +78,7 @@ return function()
                 Test.create,
                 true,
                 "Failed to create test of type boolean (expected table or function)",
-                "Create did not fail with bad args"
+                "Create did not fail with bad args, boolean"
         )
     end)
     add_validation("create__failed_with_nil", function()
@@ -78,7 +86,7 @@ return function()
                 Test.create,
                 nil,
                 "Failed to create test of type nil (expected table or function)",
-                "Create did not fail with bad args"
+                "Create did not fail with bad args, nil"
         )
     end)
 
