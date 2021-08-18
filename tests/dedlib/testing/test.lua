@@ -192,7 +192,49 @@ return function()
         Assert.assert_equals_exactly("test_foo", tests[1].name, "Test name wrong")
     end)
 
-    -- valid_name
+
+    -- Test.valid_name validations
+    add_validation("valid_name__string_with_test", function()
+        local name = "test_foo"
+        local actual = Test.valid_name(name)
+        Assert.assert_true(actual, "Failed validation for name: " .. serpent.line(name))
+    end)
+    add_validation("valid_name__string_with_test_uppercase", function()
+        local name = "Test_Foo"
+        local actual = Test.valid_name(name)
+        Assert.assert_true(actual, "Failed validation for name: " .. serpent.line(name))
+    end)
+    add_validation("valid_name__string_without_test", function()
+        local name = "foo"
+        local actual = Test.valid_name(name)
+        Assert.assert_false(actual, "Failed validation for name: " .. serpent.line(name))
+    end)
+    add_validation("valid_name__number", function()
+        local name = 42
+        local actual = Test.valid_name(name)
+        Assert.assert_true(actual, "Failed validation for name: " .. serpent.line(name))
+    end)
+    add_validation("valid_name__boolean", function()
+        local name = true
+        local actual = Test.valid_name(name)
+        Assert.assert_false(actual, "Failed validation for name: " .. serpent.line(name))
+    end)
+    add_validation("valid_name__nil", function()
+        local name = nil
+        local actual = Test.valid_name(name)
+        Assert.assert_false(actual, "Failed validation for name: " .. serpent.line(name))
+    end)
+    add_validation("valid_name__table", function()
+        local name = {}
+        local actual = Test.valid_name(name)
+        Assert.assert_false(actual, "Failed validation for name: " .. serpent.line(name))
+    end)
+    add_validation("valid_name__function", function()
+        local name = function() end
+        local actual = Test.valid_name(name)
+        Assert.assert_false(actual, "Failed validation for name: " .. serpent.line(name))
+    end)
+
     -- generate name
     -- validate_property (or validate?) (or I could do this through create) for each one, a good and a bad, and force
     -- before
