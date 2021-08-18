@@ -5,6 +5,7 @@ local Tester = require("__DedLib__/modules/testing/tester")
 
 local assert = require("testing/assert")
 local mock = require("testing/mock")
+local test = require("testing/test")
 local tester = require("testing/tester")
 
 local stringify = require("stringify")
@@ -36,6 +37,7 @@ return function()
     -- Test the tester first
     add_tester_results(assert())
     add_tester_results(mock())
+    add_tester_results(test())
     --add_tester_results(tester()) --TODO - needs rewrite for the new abstraction
 
     Logger:info("Tester validation results: %s", tester_results)
