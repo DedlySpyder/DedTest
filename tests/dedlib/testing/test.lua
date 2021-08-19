@@ -235,7 +235,39 @@ return function()
         Assert.assert_false(actual, "Failed validation for name: " .. serpent.line(name))
     end)
 
-    -- generate name
+
+    -- Test.generate_name validations
+    add_validation("generate_name__string", function()
+        local name = "foo"
+        local actual = Test.generate_name(name)
+        Assert.assert_equals(name, actual, "Failed validation for generate name: " .. serpent.line(name))
+    end)
+    add_validation("generate_name__number", function()
+        local name = 42
+        local actual = Test.generate_name(name)
+        Assert.assert_equals("Unnamed Test #" .. name, actual, "Failed validation for generate name: " .. serpent.line(name))
+    end)
+    add_validation("generate_name__nil", function()
+        local name = nil
+        local actual = Test.generate_name(name)
+        Assert.assert_starts_with("Unnamed Test #", actual, "Failed validation for generate name: " .. serpent.line(name))
+    end)
+    add_validation("generate_name__boolean", function()
+        local name = true
+        local actual = Test.generate_name(name)
+        Assert.assert_equals("Test: " .. tostring(name), actual, "Failed validation for generate name: " .. serpent.line(name))
+    end)
+    add_validation("generate_name__table", function()
+        local name = {"foo"}
+        local actual = Test.generate_name(name)
+        Assert.assert_equals("Test: " .. serpent.line(name), actual, "Failed validation for generate name: " .. serpent.line(name))
+    end)
+    add_validation("generate_name__function", function()
+        local name = function() end
+        local actual = Test.generate_name(name)
+        Assert.assert_equals("Test: <function>", actual, "Failed validation for generate name: " .. serpent.line(name))
+    end)
+
     -- validate_property (or validate?) (or I could do this through create) for each one, a good and a bad, and force
     -- before
     -- after
