@@ -268,6 +268,96 @@ return function()
         Assert.assert_equals("Test: <function>", actual, "Failed validation for generate name: " .. serpent.line(name))
     end)
 
+
+    -- Test.validate() validations
+    local makeTestForValidateTests = function(prop, propValue)
+        local t = {[prop] = propValue}
+        setmetatable(t, Test)
+        return t
+    end
+    local testValidateGood = function(prop, propValue, toList)
+        add_validation("validate__" .. prop .. "_good_" .. type(propValue), function()
+            local test = makeTestForValidateTests(prop, propValue)
+            -- Should succeed
+            Test.validate(test)
+
+            if toList then
+                Assert.assert_true(#test[prop] > 0, "Validate did not change " .. prop .. "to a list")
+            end
+        end)
+    end
+    local testValidateBad = function(prop, propValue)
+        local propType = type(propValue)
+        add_validation("validate__" .. prop .. "_bad_" .. propType, function()
+            local test = makeTestForValidateTests(prop, propValue)
+            Assert.assert_throws_error(
+                    Test.validate,
+                    {test},
+                    "failed validation for " .. prop .. ", see logs for more details",
+                    "Validate did not fail with " .. prop .. " as " .. propType
+            )
+        end)
+    end
+    testValidateGood("args", {})
+    testValidateGood("args", {f = "foo"}, true)
+    testValidateGood("args", nil)
+    testValidateBad("args", "foo")
+    testValidateBad("args", 42)
+    testValidateBad("args", true)
+    testValidateBad("args", function() end)
+
+    testValidateGood("generateArgsFunc", function() end)
+    testValidateGood("generateArgsFunc", nil)
+    testValidateBad("generateArgsFunc", "foo")
+    testValidateBad("generateArgsFunc", 42)
+    testValidateBad("generateArgsFunc", true)
+    testValidateBad("generateArgsFunc", {})
+
+    testValidateGood("generateArgsFuncArgs", {})
+    testValidateGood("generateArgsFuncArgs", {f = "foo"}, true)
+    testValidateGood("generateArgsFuncArgs", nil)
+    testValidateBad("generateArgsFuncArgs", "foo")
+    testValidateBad("generateArgsFuncArgs", 42)
+    testValidateBad("generateArgsFuncArgs", true)
+    testValidateBad("generateArgsFuncArgs", function() end)
+
+    testValidateGood("func", function() end)
+    testValidateGood("func", nil)
+    testValidateBad("func", "foo")
+    testValidateBad("func", 42)
+    testValidateBad("func", true)
+    testValidateBad("func", {})
+
+    testValidateGood("before", function() end)
+    testValidateGood("before", nil)
+    testValidateBad("before", "foo")
+    testValidateBad("before", 42)
+    testValidateBad("before", true)
+    testValidateBad("before", {})
+
+    testValidateGood("beforeArgs", {})
+    testValidateGood("beforeArgs", {f = "foo"}, true)
+    testValidateGood("beforeArgs", nil)
+    testValidateBad("beforeArgs", "foo")
+    testValidateBad("beforeArgs", 42)
+    testValidateBad("beforeArgs", true)
+    testValidateBad("beforeArgs", function() end)
+
+    testValidateGood("after", function() end)
+    testValidateGood("after", nil)
+    testValidateBad("after", "foo")
+    testValidateBad("after", 42)
+    testValidateBad("after", true)
+    testValidateBad("after", {})
+
+    testValidateGood("afterArgs", {})
+    testValidateGood("afterArgs", {f = "foo"}, true)
+    testValidateGood("afterArgs", nil)
+    testValidateBad("afterArgs", "foo")
+    testValidateBad("afterArgs", 42)
+    testValidateBad("afterArgs", true)
+    testValidateBad("afterArgs", function() end)
+
     -- validate_property (or validate?) (or I could do this through create) for each one, a good and a bad, and force
     -- before
     -- after
