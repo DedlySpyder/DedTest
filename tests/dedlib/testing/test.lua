@@ -370,8 +370,201 @@ return function()
     testValidateBad("afterArgs", true)
     testValidateBad("afterArgs", function() end)
 
-    -- validate_property (or validate?) (or I could do this through create) for each one, a good and a bad, and force
-    -- before
+
+    -- Test.run_before()
+    -- Assumes that everything is the correct type, because of the validate on test creation
+    add_validation("before__no_func", function()
+        local test = Test.create({})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(nil, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_failure", function()
+        local errorMessage = "supposed to fail"
+        local test = Test.create({before = function() error(errorMessage) end})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(false, result, "Failed validation for before returned result")
+        Assert.assert_ends_with(errorMessage, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("skipped", test.state, "Failed validation for before state property")
+        Assert.assert_false(test.running, "Failed validation for before running property")
+        Assert.assert_true(test.done, "Failed validation for before done property")
+    end)
+    add_validation("before__func_success_no_args", function()
+        local test = Test.create({before = function() end})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_no_args_returned_value", function()
+        local expectedReturnedValue = "foo"
+        local test = Test.create({before = function() return expectedReturnedValue end})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(expectedReturnedValue, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+
+    add_validation("before__func_success_one_arg_string", function()
+        local beforeArg = "foo"
+        local test = Test.create({before = function(arg)
+            Assert.assert_equals(beforeArg, arg)
+        end, beforeArgs = {beforeArg}})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_one_arg_number", function()
+        local beforeArg = 42
+        local test = Test.create({before = function(arg)
+            Assert.assert_equals(beforeArg, arg)
+        end, beforeArgs = {beforeArg}})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_one_arg_boolean", function()
+        local beforeArg = true
+        local test = Test.create({before = function(arg)
+            Assert.assert_equals(beforeArg, arg)
+        end, beforeArgs = {beforeArg}})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_one_arg_nil", function()
+        local beforeArg = nil
+        local test = Test.create({before = function(arg)
+            Assert.assert_equals(beforeArg, arg)
+        end, beforeArgs = {beforeArg}})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_one_arg_table", function()
+        local beforeArg = {f = "foo"}
+        local test = Test.create({before = function(arg)
+            Assert.assert_equals(beforeArg, arg)
+        end, beforeArgs = {beforeArg}})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_one_arg_function", function()
+        local beforeArg = function() end
+        local test = Test.create({before = function(arg)
+            Assert.assert_equals(beforeArg, arg)
+        end, beforeArgs = {beforeArg}})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+
+    add_validation("before__func_success_two_args_string", function()
+        local beforeArgs = {"foo", "bar"}
+        local test = Test.create({before = function(arg1, arg2)
+            Assert.assert_equals(beforeArgs[1], arg1)
+            Assert.assert_equals(beforeArgs[2], arg2)
+        end, beforeArgs = beforeArgs })
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_two_args_number", function()
+        local beforeArgs = {42, 200}
+        local test = Test.create({before = function(arg1, arg2)
+            Assert.assert_equals(beforeArgs[1], arg1)
+            Assert.assert_equals(beforeArgs[2], arg2)
+        end, beforeArgs = beforeArgs })
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_two_args_boolean", function()
+        local beforeArgs = {true, false}
+        local test = Test.create({before = function(arg1, arg2)
+            Assert.assert_equals(beforeArgs[1], arg1)
+            Assert.assert_equals(beforeArgs[2], arg2)
+        end, beforeArgs = beforeArgs })
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_two_args_nil", function()
+        local beforeArgs = {nil, nil}
+        local test = Test.create({before = function(arg1, arg2)
+            Assert.assert_equals(beforeArgs[1], arg1)
+            Assert.assert_equals(beforeArgs[2], arg2)
+        end, beforeArgs = beforeArgs })
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_two_args_table", function()
+        local beforeArgs = {{f = "foo"}, {b = "bar"}}
+        local test = Test.create({before = function(arg1, arg2)
+            Assert.assert_equals(beforeArgs[1], arg1)
+            Assert.assert_equals(beforeArgs[2], arg2)
+        end, beforeArgs = beforeArgs })
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_two_args_function", function()
+        local beforeArgs = {function() end, function() end}
+        local test = Test.create({before = function(arg1, arg2)
+            Assert.assert_equals(beforeArgs[1], arg1)
+            Assert.assert_equals(beforeArgs[2], arg2)
+        end, beforeArgs = beforeArgs })
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+
     -- after
     -- generate args (should overwrite base args)
     -- - single returned value
