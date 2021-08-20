@@ -5,7 +5,7 @@ local Test = require("__DedLib__/modules/testing/test")
 
 local Assert = require("__DedLib__/modules/testing/assert")
 
-local test_validations = {succeeded = 0, failed = 0}
+local test_validations = {}
 
 function add_validation(name, func)
     table.insert(test_validations, {name = name, func = func})
@@ -578,6 +578,5 @@ return function()
     -- set_skipped (test for reasonPrefix)
     -- set_failed (test for reasonPrefix)
 
-    validate()
-    return test_validations
+    return validate()
 end
