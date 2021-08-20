@@ -276,13 +276,21 @@ return function()
         return t
     end
     local testValidateGood = function(prop, propValue, toList)
-        add_validation("validate__" .. prop .. "_good_" .. type(propValue), function()
+        local propType = type(propValue)
+        local suffix = "_" .. serpent.line(propValue)
+        if propType == "function" then suffix = "" end
+        add_validation("validate__" .. prop .. "_good_" .. propType .. suffix, function()
             local test = makeTestForValidateTests(prop, propValue)
             -- Should succeed
             Test.validate(test)
 
-            if toList then
-                Assert.assert_true(#test[prop] > 0, "Validate did not change " .. prop .. "to a list")
+            if propType == "table" then -- Validate should change it to a list
+                if #propValue == 0 and table_size(propValue) > 0 then
+                    Assert.assert_true(#test[prop] > 0, "Validate did not change " .. prop .. " to a list")
+                    Assert.assert_equals({propValue}, rawget(test, prop), "Value not made into a list")
+                else
+                    Assert.assert_equals(propValue, rawget(test, prop), "Value made into a list when not needed")
+                end
             end
         end)
     end
@@ -299,6 +307,7 @@ return function()
         end)
     end
     testValidateGood("args", {})
+    testValidateGood("args", {"foo"}) -- Doesn't need to listed
     testValidateGood("args", {f = "foo"}, true)
     testValidateGood("args", nil)
     testValidateBad("args", "foo")
@@ -314,6 +323,7 @@ return function()
     testValidateBad("generateArgsFunc", {})
 
     testValidateGood("generateArgsFuncArgs", {})
+    testValidateGood("generateArgsFuncArgs", {"foo"})
     testValidateGood("generateArgsFuncArgs", {f = "foo"}, true)
     testValidateGood("generateArgsFuncArgs", nil)
     testValidateBad("generateArgsFuncArgs", "foo")
@@ -336,6 +346,7 @@ return function()
     testValidateBad("before", {})
 
     testValidateGood("beforeArgs", {})
+    testValidateGood("beforeArgs", {"foo"})
     testValidateGood("beforeArgs", {f = "foo"}, true)
     testValidateGood("beforeArgs", nil)
     testValidateBad("beforeArgs", "foo")
@@ -351,6 +362,7 @@ return function()
     testValidateBad("after", {})
 
     testValidateGood("afterArgs", {})
+    testValidateGood("afterArgs", {"foo"})
     testValidateGood("afterArgs", {f = "foo"}, true)
     testValidateGood("afterArgs", nil)
     testValidateBad("afterArgs", "foo")
