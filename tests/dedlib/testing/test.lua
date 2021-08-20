@@ -565,6 +565,168 @@ return function()
         Assert.assert_true(test.running, "Failed validation for before running property")
     end)
 
+
+    -- Test.run_after()
+    -- Assumes that everything is the correct type, because of the validate on test creation
+    add_validation("after__no_func", function()
+        local test = Test.create({})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(nil, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_failure", function()
+        local errorMessage = "supposed to fail"
+        local test = Test.create({after = function() error(errorMessage) end})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(false, result, "Failed validation for after returned result")
+        Assert.assert_ends_with(errorMessage, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_no_args", function()
+        local test = Test.create({after = function() end})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_no_args_returned_value", function()
+        local expectedReturnedValue = "foo"
+        local test = Test.create({after = function() return expectedReturnedValue end})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(expectedReturnedValue, returnedValue, "Failed validation for after returned value")
+    end)
+
+    add_validation("after__func_success_one_arg_string", function()
+        local afterArg = "foo"
+        local test = Test.create({after = function(arg)
+            Assert.assert_equals(afterArg, arg)
+        end, afterArgs = {afterArg}})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_one_arg_number", function()
+        local afterArg = 42
+        local test = Test.create({after = function(arg)
+            Assert.assert_equals(afterArg, arg)
+        end, afterArgs = {afterArg}})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_one_arg_boolean", function()
+        local afterArg = true
+        local test = Test.create({after = function(arg)
+            Assert.assert_equals(afterArg, arg)
+        end, afterArgs = {afterArg}})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_one_arg_nil", function()
+        local afterArg = nil
+        local test = Test.create({after = function(arg)
+            Assert.assert_equals(afterArg, arg)
+        end, afterArgs = {afterArg}})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_one_arg_table", function()
+        local afterArg = {f = "foo"}
+        local test = Test.create({after = function(arg)
+            Assert.assert_equals(afterArg, arg)
+        end, afterArgs = {afterArg}})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_one_arg_function", function()
+        local afterArg = function() end
+        local test = Test.create({after = function(arg)
+            Assert.assert_equals(afterArg, arg)
+        end, afterArgs = {afterArg}})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+
+    add_validation("after__func_success_two_args_string", function()
+        local afterArgs = {"foo", "bar"}
+        local test = Test.create({after = function(arg1, arg2)
+            Assert.assert_equals(afterArgs[1], arg1)
+            Assert.assert_equals(afterArgs[2], arg2)
+        end, afterArgs = afterArgs })
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_two_args_number", function()
+        local afterArgs = {42, 200}
+        local test = Test.create({after = function(arg1, arg2)
+            Assert.assert_equals(afterArgs[1], arg1)
+            Assert.assert_equals(afterArgs[2], arg2)
+        end, afterArgs = afterArgs })
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_two_args_boolean", function()
+        local afterArgs = {true, false}
+        local test = Test.create({after = function(arg1, arg2)
+            Assert.assert_equals(afterArgs[1], arg1)
+            Assert.assert_equals(afterArgs[2], arg2)
+        end, afterArgs = afterArgs })
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_two_args_nil", function()
+        local afterArgs = {nil, nil}
+        local test = Test.create({after = function(arg1, arg2)
+            Assert.assert_equals(afterArgs[1], arg1)
+            Assert.assert_equals(afterArgs[2], arg2)
+        end, afterArgs = afterArgs })
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_two_args_table", function()
+        local afterArgs = {{f = "foo"}, {b = "bar"}}
+        local test = Test.create({after = function(arg1, arg2)
+            Assert.assert_equals(afterArgs[1], arg1)
+            Assert.assert_equals(afterArgs[2], arg2)
+        end, afterArgs = afterArgs })
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_two_args_function", function()
+        local afterArgs = {function() end, function() end}
+        local test = Test.create({after = function(arg1, arg2)
+            Assert.assert_equals(afterArgs[1], arg1)
+            Assert.assert_equals(afterArgs[2], arg2)
+        end, afterArgs = afterArgs })
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+
     -- after
     -- generate args (should overwrite base args)
     -- - single returned value
