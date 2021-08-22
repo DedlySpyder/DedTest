@@ -60,12 +60,14 @@ local arg_validations = {
         table_map = {{f = "foo"}, {b = "bar"}}
     }
 }
-local function add_one_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest)
+local function add_one_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
+    if not testSetup then testSetup = function() end end
     for name, validArg in pairs(arg_validations[1]) do
         add_validation(funcName .. "__func_success_one_arg_" .. name, function()
             local test = Test.create({[funcNameInTest or funcName] = function(arg)
                 Assert.assert_equals(validArg, arg)
             end, [funcArgsInTest or funcName .. "Args"] = {validArg}})
+            testSetup(test)
 
             if funcName == "before" or funcName == "after" then
                 local result, returnedValue = test["run_" .. funcName](test)
@@ -79,13 +81,15 @@ local function add_one_arg_validations(funcName, extraAsserts, funcNameInTest, f
         end)
     end
 end
-local function add_two_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest)
+local function add_two_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
+    if not testSetup then testSetup = function() end end
     for name, validArgs in pairs(arg_validations[2]) do
         add_validation(funcName .. "__func_success_two_arg_" .. name, function()
             local test = Test.create({[funcNameInTest or funcName] = function(arg1, arg2)
                 Assert.assert_equals(validArgs[1], arg1)
                 Assert.assert_equals(validArgs[2], arg2)
             end, [funcArgsInTest or funcName .. "Args"] = validArgs})
+            testSetup(test)
 
             if funcName == "before" or funcName == "after" then
                 local result, returnedValue = test["run_" .. funcName](test)
@@ -714,10 +718,72 @@ return function()
         Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
     end, "generateArgsFunc", "generateArgsFuncArgs")
 
-    -- run
-    -- - success
-    -- - fail
-    -- - pending test runs before (or tries to if it doesn't have one) & runs generate args func & then runs the main test
+
+    -- Test.run() validations
+    add_validation("run___already_done", function()
+        local test = Test.create({})
+        test.done = true
+        test:run()
+
+        Assert.assert_nil(rawget(test, "state"), "Failed validation for run state value")
+    end)
+    add_validation("run___running_success", function()
+        local afterRan = false
+        local test = Test.create({func = function() end, after = function() afterRan = true end})
+        test.state = "running"
+        test.running = true
+        test:run()
+
+        Assert.assert_equals("succeeded", test.state, "Failed validation for run state value")
+        Assert.assert_false(test.running, "Failed validation for run running value")
+        Assert.assert_true(test.done, "Failed validation for run done value")
+        Assert.assert_true(afterRan, "After function did not run")
+    end)
+    add_validation("run___running_failed", function()
+        local afterRan = false
+        local errorMessage = "i failed"
+        local test = Test.create({func = function() error(errorMessage) end, after = function() afterRan = true end})
+        test.state = "running"
+        test.running = true
+        test:run()
+
+        Assert.assert_equals("failed", test.state, "Failed validation for run state value")
+        Assert.assert_false(test.running, "Failed validation for run running value")
+        Assert.assert_true(test.done, "Failed validation for run done value")
+        Assert.assert_ends_with(errorMessage, test.error, "Failed validation for run error value")
+        Assert.assert_true(afterRan, "After function did not run")
+    end)
+    add_validation("run___pending", function()
+        local beforeRan = false
+        local generatedArgsRan = false
+        local mainFuncRan = false
+        local test = Test.create({
+            before = function() beforeRan = true end,
+            generateArgsFunc = function() generatedArgsRan = true end,
+            func = function() mainFuncRan = true end
+        })
+        test.state = "pending"
+        test:run()
+
+        Assert.assert_true(beforeRan, "Before func did not run on pending test")
+        Assert.assert_true(generatedArgsRan, "Generate args func did not run on pending test")
+        Assert.assert_true(mainFuncRan, "Main func did not run on pending test")
+    end)
+
+    add_arg_validations(
+            "run",
+            function(test)
+                Assert.assert_equals("succeeded", test.state, "Failed validation for run state value")
+                Assert.assert_false(test.running, "Failed validation for run running value")
+                Assert.assert_true(test.done, "Failed validation for run done value")
+            end,
+            "func",
+            "args",
+            function(test)
+                test.state = "running"
+            end
+    )
+
     -- parse_reason
     -- set_reason
     -- set_skipped (test for reasonPrefix)
