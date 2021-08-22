@@ -7,11 +7,11 @@ local Assert = require("__DedLib__/modules/testing/assert")
 
 local test_validations = {}
 
-function add_validation(name, func)
+local function add_validation(name, func)
     table.insert(test_validations, {name = name, func = func})
 end
 
-function validate()
+local function validate()
     local count = {succeeded = 0, failed = 0}
     local increment_failed = function() count["failed"] = count["failed"] + 1 end
     local increment_succeeded = function() count["succeeded"] = count["succeeded"] + 1 end
@@ -21,10 +21,10 @@ function validate()
         local name = "Test__" .. validation.name
         local func = validation.func
 
-        Logger:debug("Running validation for Test: %s", name)
+        Logger:debug("Running validation for: %s", name)
         local s, err = pcall(func)
         if not s then
-            Logger:fatal("Failed validation of Test %s with error: %s", name, err)
+            Logger:fatal("Failed validation of %s with error: %s", name, err)
             increment_failed()
         else
             increment_succeeded()
