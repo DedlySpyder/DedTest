@@ -727,10 +727,320 @@ return function()
         Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
     end)
 
-    -- after
-    -- generate args (should overwrite base args)
-    -- - single returned value
-    -- - multiple returned values
+
+    -- Test.generate_args() validations
+    add_validation("generate_args__unset", function()
+        local test = Test.create({})
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__func_failure", function()
+        local errorMessage = "supposed to fail"
+        local test = Test.create({generateArgsFunc = function() error(errorMessage) end})
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals("skipped", test.state, "Failed validation for generate args state value")
+        Assert.assert_ends_with(errorMessage, test.error, "Failed validation for generate args error reason")
+    end)
+
+    add_validation("generate_args__no_args_generated", function()
+        local generatedArgs = nil
+        local test = Test.create({generateArgsFunc = function() return generatedArgs end})
+        test:generate_args()
+
+        Assert.assert_equals({generatedArgs}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+
+    add_validation("generate_args__generated_string", function()
+        local generatedArgs = "foo"
+        local test = Test.create({generateArgsFunc = function() return generatedArgs end})
+        test:generate_args()
+
+        Assert.assert_equals({generatedArgs}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_number", function()
+        local generatedArgs = 42
+        local test = Test.create({generateArgsFunc = function() return generatedArgs end})
+        test:generate_args()
+
+        Assert.assert_equals({generatedArgs}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_boolean_true", function()
+        local generatedArgs = true
+        local test = Test.create({generateArgsFunc = function() return generatedArgs end})
+        test:generate_args()
+
+        Assert.assert_equals({generatedArgs}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_boolean_false", function()
+        local generatedArgs = false
+        local test = Test.create({generateArgsFunc = function() return generatedArgs end})
+        test:generate_args()
+
+        Assert.assert_equals({generatedArgs}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_empty_table", function()
+        local generatedArgs = {}
+        local test = Test.create({generateArgsFunc = function() return generatedArgs end})
+        test:generate_args()
+
+        Assert.assert_equals_exactly(generatedArgs, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(1, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_list_table", function()
+        local generatedArgs = {"foo"}
+        local test = Test.create({generateArgsFunc = function() return generatedArgs end})
+        test:generate_args()
+
+        Assert.assert_equals_exactly(generatedArgs, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(1, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_map_table", function()
+        local generatedArgs = {f = "foo"}
+        local test = Test.create({generateArgsFunc = function() return generatedArgs end})
+        test:generate_args()
+
+        Assert.assert_equals_exactly(generatedArgs, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(1, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_function", function()
+        local generatedArgs = function() end
+        local test = Test.create({generateArgsFunc = function() return generatedArgs end})
+        test:generate_args()
+
+        Assert.assert_equals_exactly(generatedArgs, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(1, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+
+    add_validation("generate_args__generated_string_two_args", function()
+        local generatedArg1 = "foo"
+        local generatedArg2 = "bar"
+        local test = Test.create({generateArgsFunc = function() return generatedArg1, generatedArg2 end})
+        test:generate_args()
+
+        Assert.assert_equals(generatedArg1, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(generatedArg2, test.args[2], "Failed validation for generate args second args value")
+        Assert.assert_equals(2, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_number_two_args", function()
+        local generatedArg1 = 42
+        local generatedArg2 = 100
+        local test = Test.create({generateArgsFunc = function() return generatedArg1, generatedArg2 end})
+        test:generate_args()
+
+        Assert.assert_equals(generatedArg1, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(generatedArg2, test.args[2], "Failed validation for generate args second args value")
+        Assert.assert_equals(2, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_boolean_true_two_args", function()
+        local generatedArg1 = true
+        local generatedArg2 = true
+        local test = Test.create({generateArgsFunc = function() return generatedArg1, generatedArg2 end})
+        test:generate_args()
+
+        Assert.assert_equals(generatedArg1, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(generatedArg2, test.args[2], "Failed validation for generate args second args value")
+        Assert.assert_equals(2, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_boolean_false_two_args", function()
+        local generatedArg1 = false
+        local generatedArg2 = false
+        local test = Test.create({generateArgsFunc = function() return generatedArg1, generatedArg2 end})
+        test:generate_args()
+
+        Assert.assert_equals(generatedArg1, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(generatedArg2, test.args[2], "Failed validation for generate args second args value")
+        Assert.assert_equals(2, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_empty_table_two_args", function()
+        local generatedArg1 = {}
+        local generatedArg2 = {}
+        local test = Test.create({generateArgsFunc = function() return generatedArg1, generatedArg2 end})
+        test:generate_args()
+
+        Assert.assert_equals(generatedArg1, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(generatedArg2, test.args[2], "Failed validation for generate args second args value")
+        Assert.assert_equals(2, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_list_table_two_args", function()
+        local generatedArg1 = {"foo"}
+        local generatedArg2 = {"bar"}
+        local test = Test.create({generateArgsFunc = function() return generatedArg1, generatedArg2 end})
+        test:generate_args()
+
+        Assert.assert_equals(generatedArg1, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(generatedArg2, test.args[2], "Failed validation for generate args second args value")
+        Assert.assert_equals(2, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_map_table_two_args", function()
+        local generatedArg1 = {f = "foo"}
+        local generatedArg2 = {b = "bar"}
+        local test = Test.create({generateArgsFunc = function() return generatedArg1, generatedArg2 end})
+        test:generate_args()
+
+        Assert.assert_equals(generatedArg1, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(generatedArg2, test.args[2], "Failed validation for generate args second args value")
+        Assert.assert_equals(2, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__generated_function_two_args", function()
+        local generatedArg1 = function() end
+        local generatedArg2 = function() end
+        local test = Test.create({generateArgsFunc = function() return generatedArg1, generatedArg2 end})
+        test:generate_args()
+
+        Assert.assert_equals(generatedArg1, test.args[1], "Failed validation for generate args first args value")
+        Assert.assert_equals(generatedArg2, test.args[2], "Failed validation for generate args second args value")
+        Assert.assert_equals(2, #test.args, "Failed validation for generate args args length: " .. serpent.line(test.args))
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+
+    add_validation("generate_args__func_success_one_arg_string", function()
+        local generatedArgFuncArg = "foo"
+        local test = Test.create({generateArgsFunc = function(arg)
+            Assert.assert_equals(generatedArgFuncArg, arg)
+        end, generateArgsFuncArgs = {generatedArgFuncArg}})
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__func_success_one_arg_number", function()
+        local generatedArgFuncArg = 42
+        local test = Test.create({generateArgsFunc = function(arg)
+            Assert.assert_equals(generatedArgFuncArg, arg)
+        end, generateArgsFuncArgs = {generatedArgFuncArg}})
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__func_success_one_arg_boolean", function()
+        local generatedArgFuncArg = true
+        local test = Test.create({generateArgsFunc = function(arg)
+            Assert.assert_equals(generatedArgFuncArg, arg)
+        end, generateArgsFuncArgs = {generatedArgFuncArg}})
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__func_success_one_arg_nil", function()
+        local generatedArgFuncArg = nil
+        local test = Test.create({generateArgsFunc = function(arg)
+            Assert.assert_equals(generatedArgFuncArg, arg)
+        end, generateArgsFuncArgs = {generatedArgFuncArg}})
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__func_success_one_arg_table", function()
+        local generatedArgFuncArg = {f = "foo"}
+        local test = Test.create({generateArgsFunc = function(arg)
+            Assert.assert_equals(generatedArgFuncArg, arg)
+        end, generateArgsFuncArgs = {generatedArgFuncArg}})
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__func_success_one_arg_function", function()
+        local generatedArgFuncArg = function() end
+        local test = Test.create({generateArgsFunc = function(arg)
+            Assert.assert_equals(generatedArgFuncArg, arg)
+        end, generateArgsFuncArgs = {generatedArgFuncArg}})
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+
+    add_validation("generate_args__func_success_two_args_string", function()
+        local generateArgsFuncArgs = {"foo", "bar"}
+        local test = Test.create({generateArgsFunc = function(arg1, arg2)
+            Assert.assert_equals(generateArgsFuncArgs[1], arg1)
+            Assert.assert_equals(generateArgsFuncArgs[2], arg2)
+        end, generateArgsFuncArgs = generateArgsFuncArgs })
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__func_success_two_args_number", function()
+        local generateArgsFuncArgs = {42, 200}
+        local test = Test.create({generateArgsFunc = function(arg1, arg2)
+            Assert.assert_equals(generateArgsFuncArgs[1], arg1)
+            Assert.assert_equals(generateArgsFuncArgs[2], arg2)
+        end, generateArgsFuncArgs = generateArgsFuncArgs })
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__func_success_two_args_boolean", function()
+        local generateArgsFuncArgs = {true, false}
+        local test = Test.create({generateArgsFunc = function(arg1, arg2)
+            Assert.assert_equals(generateArgsFuncArgs[1], arg1)
+            Assert.assert_equals(generateArgsFuncArgs[2], arg2)
+        end, generateArgsFuncArgs = generateArgsFuncArgs })
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__func_success_two_args_nil", function()
+        local generateArgsFuncArgs = {nil, nil}
+        local test = Test.create({generateArgsFunc = function(arg1, arg2)
+            Assert.assert_equals(generateArgsFuncArgs[1], arg1)
+            Assert.assert_equals(generateArgsFuncArgs[2], arg2)
+        end, generateArgsFuncArgs = generateArgsFuncArgs })
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__func_success_two_args_table", function()
+        local generateArgsFuncArgs = {{f = "foo"}, {b = "bar"}}
+        local test = Test.create({generateArgsFunc = function(arg1, arg2)
+            Assert.assert_equals(generateArgsFuncArgs[1], arg1)
+            Assert.assert_equals(generateArgsFuncArgs[2], arg2)
+        end, generateArgsFuncArgs = generateArgsFuncArgs })
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+    add_validation("generate_args__func_success_two_args_function", function()
+        local generateArgsFuncArgs = {function() end, function() end}
+        local test = Test.create({generateArgsFunc = function(arg1, arg2)
+            Assert.assert_equals(generateArgsFuncArgs[1], arg1)
+            Assert.assert_equals(generateArgsFuncArgs[2], arg2)
+        end, generateArgsFuncArgs = generateArgsFuncArgs })
+        test:generate_args()
+
+        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
+        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
+    end)
+
     -- run
     -- - success
     -- - fail
