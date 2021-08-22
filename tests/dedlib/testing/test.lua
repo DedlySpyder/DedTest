@@ -99,9 +99,9 @@ local function add_two_arg_validations(funcName, extraAsserts, funcNameInTest, f
         end)
     end
 end
-local function add_arg_validations(funcName, extraAsserts)
-    add_one_arg_validations(funcName, extraAsserts)
-    add_two_arg_validations(funcName, extraAsserts)
+local function add_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
+    add_one_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
+    add_two_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
 end
 
 return function()
@@ -709,11 +709,7 @@ return function()
         Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
     end)
 
-    add_one_arg_validations("generate_args", function(test)
-        Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
-        Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
-    end, "generateArgsFunc", "generateArgsFuncArgs")
-    add_two_arg_validations("generate_args", function(test)
+    add_arg_validations("generate_args", function(test)
         Assert.assert_equals({}, test.args, "Failed validation for generate args args value")
         Assert.assert_equals(Test.state, test.state, "Failed validation for generate args state value")
     end, "generateArgsFunc", "generateArgsFuncArgs")
