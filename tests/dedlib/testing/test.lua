@@ -18,7 +18,7 @@ function validate()
 
     Logger:info("Running %d Test validations", #test_validations)
     for _, validation in ipairs(test_validations) do
-        local name = validation.name
+        local name = "Test__" .. validation.name
         local func = validation.func
 
         Logger:debug("Running validation for Test: %s", name)
