@@ -784,6 +784,33 @@ return function()
             end
     )
 
+
+    -- Test.parse_reason validations
+    add_validation("parse_reason__string", function()
+        local reason = "foo"
+        local parsedMessage, parsedStacktrace = Test.parse_reason(reason)
+        Assert.assert_equals(reason, parsedMessage, "Failed validation for parsed message")
+        Assert.assert_nil(parsedStacktrace, "Failed validation for parsed stacktrace")
+    end)
+    add_validation("parse_reason__generic_table", function()
+        local reason = {"foo"}
+        local parsedMessage, parsedStacktrace = Test.parse_reason(reason)
+        Assert.assert_equals(serpent.line(reason), parsedMessage, "Failed validation for parsed message")
+        Assert.assert_nil(parsedStacktrace, "Failed validation for parsed stacktrace")
+    end)
+    add_validation("parse_reason__assert_table", function()
+        local reason = {message = "message", stacktrace = "stacktrace"}
+        local parsedMessage, parsedStacktrace = Test.parse_reason(reason)
+        Assert.assert_equals(reason.message, parsedMessage, "Failed validation for parsed message")
+        Assert.assert_equals(reason.stacktrace, parsedStacktrace, "Failed validation for parsed stacktrace")
+    end)
+    add_validation("parse_reason__assert_table_message_table", function()
+        local reason = {message = {"foo"}, stacktrace = "stacktrace"}
+        local parsedMessage, parsedStacktrace = Test.parse_reason(reason)
+        Assert.assert_equals(serpent.line(reason.message), parsedMessage, "Failed validation for parsed message")
+        Assert.assert_equals(reason.stacktrace, parsedStacktrace, "Failed validation for parsed stacktrace")
+    end)
+
     -- parse_reason
     -- set_reason
     -- set_skipped (test for reasonPrefix)
