@@ -870,9 +870,5 @@ return function()
         Assert.assert_equals(reason.stacktrace, test.stacktrace, "Failed validation for set stacktrace")
     end)
 
-
-    -- set_skipped (test for reasonPrefix)
-    -- set_failed (test for reasonPrefix)
-
     return validate()
 end
