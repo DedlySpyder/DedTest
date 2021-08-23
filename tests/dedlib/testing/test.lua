@@ -799,13 +799,13 @@ return function()
         Assert.assert_nil(parsedStacktrace, "Failed validation for parsed stacktrace")
     end)
     add_validation("parse_reason__assert_table", function()
-        local reason = {message = "message", stacktrace = "stacktrace"}
+        local reason = {message = "msg", stacktrace = "stk"}
         local parsedMessage, parsedStacktrace = Test.parse_reason(reason)
         Assert.assert_equals(reason.message, parsedMessage, "Failed validation for parsed message")
         Assert.assert_equals(reason.stacktrace, parsedStacktrace, "Failed validation for parsed stacktrace")
     end)
     add_validation("parse_reason__assert_table_message_table", function()
-        local reason = {message = {"foo"}, stacktrace = "stacktrace"}
+        local reason = {message = {"msg"}, stacktrace = "stk"}
         local parsedMessage, parsedStacktrace = Test.parse_reason(reason)
         Assert.assert_equals(serpent.line(reason.message), parsedMessage, "Failed validation for parsed message")
         Assert.assert_equals(reason.stacktrace, parsedStacktrace, "Failed validation for parsed stacktrace")
