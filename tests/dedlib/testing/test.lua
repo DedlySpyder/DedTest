@@ -811,8 +811,66 @@ return function()
         Assert.assert_equals(reason.stacktrace, parsedStacktrace, "Failed validation for parsed stacktrace")
     end)
 
-    -- parse_reason
-    -- set_reason
+
+    -- Test.set_reason
+    add_validation("set_reason__basic_reason", function()
+        local test = Test.create({})
+        local reason = "foo"
+        test:set_reason(reason)
+
+        Assert.assert_equals(reason, test.error, "Failed validation for set message")
+        Assert.assert_nil(test.stacktrace, "Failed validation for set stacktrace")
+    end)
+    add_validation("set_reason__basic_reason_with_prefix", function()
+        local test = Test.create({})
+        local reason = "foo"
+        test:set_reason(reason, "prefix")
+
+        Assert.assert_equals("prefix" .. reason, test.error, "Failed validation for set message")
+        Assert.assert_nil(test.stacktrace, "Failed validation for set stacktrace")
+    end)
+    add_validation("set_reason__table_message_and_stacktrace", function()
+        local test = Test.create({})
+        local reason = {message = "msg", stacktrace = "stk"}
+        test:set_reason(reason)
+
+        Assert.assert_equals(reason.message, test.error, "Failed validation for set message")
+        Assert.assert_equals(reason.stacktrace, test.stacktrace, "Failed validation for set stacktrace")
+    end)
+    add_validation("set_reason__table_message_only", function()
+        local test = Test.create({})
+        local reason = {message = "msg"}
+        test:set_reason(reason)
+
+        Assert.assert_equals(reason.message, test.error, "Failed validation for set message")
+        Assert.assert_nil(test.stacktrace, "Failed validation for set stacktrace")
+    end)
+    add_validation("set_reason__table_message_only_with_prefix", function()
+        local test = Test.create({})
+        local reason = {message = "msg"}
+        test:set_reason(reason, "prefix")
+
+        Assert.assert_equals("prefix" .. reason.message, test.error, "Failed validation for set message")
+        Assert.assert_nil(test.stacktrace, "Failed validation for set stacktrace")
+    end)
+    add_validation("set_reason__table_stacktrace_only", function()
+        local test = Test.create({})
+        local reason = {stacktrace = "stk"}
+        test:set_reason(reason)
+
+        Assert.assert_nil(rawget(test, "error"), "Failed validation for set message")
+        Assert.assert_equals(reason.stacktrace, test.stacktrace, "Failed validation for set stacktrace")
+    end)
+    add_validation("set_reason__table_stacktrace_only_with_prefix", function()
+        local test = Test.create({})
+        local reason = {stacktrace = "stk"}
+        test:set_reason(reason, "prefix")
+
+        Assert.assert_equals("prefix", test.error, "Failed validation for set message")
+        Assert.assert_equals(reason.stacktrace, test.stacktrace, "Failed validation for set stacktrace")
+    end)
+
+
     -- set_skipped (test for reasonPrefix)
     -- set_failed (test for reasonPrefix)
 
