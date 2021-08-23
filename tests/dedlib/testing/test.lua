@@ -720,14 +720,14 @@ return function()
 
 
     -- Test.run() validations
-    add_validation("run___already_done", function()
+    add_validation("run__already_done", function()
         local test = Test.create({})
         test.done = true
         test:run()
 
         Assert.assert_nil(rawget(test, "state"), "Failed validation for run state value")
     end)
-    add_validation("run___running_success", function()
+    add_validation("run__running_success", function()
         local afterRan = false
         local test = Test.create({func = function() end, after = function() afterRan = true end})
         test.state = "running"
@@ -739,7 +739,7 @@ return function()
         Assert.assert_true(test.done, "Failed validation for run done value")
         Assert.assert_true(afterRan, "After function did not run")
     end)
-    add_validation("run___running_failed", function()
+    add_validation("run__running_failed", function()
         local afterRan = false
         local errorMessage = "i failed"
         local test = Test.create({func = function() error(errorMessage) end, after = function() afterRan = true end})
@@ -753,7 +753,7 @@ return function()
         Assert.assert_ends_with(errorMessage, test.error, "Failed validation for run error value")
         Assert.assert_true(afterRan, "After function did not run")
     end)
-    add_validation("run___pending", function()
+    add_validation("run__pending", function()
         local beforeRan = false
         local generatedArgsRan = false
         local mainFuncRan = false
