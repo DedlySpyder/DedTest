@@ -43,7 +43,7 @@ function Validation_Utils.validate(group)
     local increment_failed = function() count["failed"] = count["failed"] + 1 end
     local increment_succeeded = function() count["succeeded"] = count["succeeded"] + 1 end
 
-    local validations = Validation_Utils.test_validations[group]
+    local validations = Validation_Utils.test_validations[group] or {}
     Logger:info("Running %d " .. group .. " validations", #validations)
     for _, validation in ipairs(validations) do
         local name = group .. "__" .. validation.name
