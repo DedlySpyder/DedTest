@@ -8,20 +8,9 @@ local GROUP = "Test_Group"
 
 local function after_each(func)
     return function()
-        pcall(func)
-        Logger:debug("Cleaning up test group all data")
-        local allGroups = Test_Group.get_all_groups()
-        allGroups = {
-            incomplete = {},
-            skipped = {},
-            completed = {}
-        }
-        local allCounts = Test_Group.get_all_group_counts()
-        allCounts = {
-            skipped = 0,
-            failed = 0,
-            succeeded = 0
-        }
+        local s, e = pcall(func)
+        Test_Group.reset_all_groups()
+        if not s then error(e) end
     end
 end
 
