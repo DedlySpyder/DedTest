@@ -124,8 +124,31 @@ return function()
     end)
 
 
+    -- Test_Group.generate_name() validations
+    add_validation("generate_name__string", function()
+        local name = "foo"
+        local actualName = Test_Group.generate_name(name)
+        Assert.assert_equals(name, actualName, "Failed validation for generate name value")
+    end)
+    add_validation("generate_name__nil", function()
+        local name = nil
+        local actualName0 = Test_Group.generate_name(name)
+        Assert.assert_equals("Unnamed Tester #0", actualName0, "Failed validation for generate name value")
+    end)
+    add_validation("generate_name__nil_number_two", function()
+        table.insert(Test_Group.get_all_groups().incomplete, {})
+        local name = nil
+        local actualName0 = Test_Group.generate_name(name)
+        Assert.assert_equals("Unnamed Tester #1", actualName0, "Failed validation for generate name value")
+    end)
+    add_validation("generate_name__number", function()
+        local name = 42
+        local actualName = Test_Group.generate_name(name)
+        Assert.assert_equals(tostring(name), actualName, "Failed validation for generate name value")
+    end)
+
+
     --[[
-    generate_name
     validate (see how Test does it)
 
     before
