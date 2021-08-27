@@ -113,6 +113,16 @@ return function()
         Assert.assert_equals(tg, Test_Group.get_all_groups().incomplete[1], "Failed validation for create all groups value")
     end)
 
+    add_validation("create__success_multiple_test_groups", function()
+        local tg1 = Test_Group.create({})
+        Assert.assert_equals("Unnamed Test Group #1", tg1.name, "Failed validation for create name value")
+        local tg2 = Test_Group.create({})
+        Assert.assert_equals("Unnamed Test Group #2", tg2.name, "Failed validation for create name value")
+        Assert.assert_equals(2, #Test_Group.get_all_groups().incomplete, "Failed validation for create all groups count")
+        Assert.assert_equals(tg1, Test_Group.get_all_groups().incomplete[1], "Failed validation for create all groups value")
+        Assert.assert_equals(tg2, Test_Group.get_all_groups().incomplete[2], "Failed validation for create all groups value")
+    end)
+
 
     --[[
     generate_name
