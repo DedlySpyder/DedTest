@@ -6,12 +6,22 @@ local Assert = require("__DedLib__/modules/testing/assert")
 local Validation_Utils = require("validation_utils")
 local GROUP = "Test_Group"
 
-local CLEAN_TEST_GROUP = table.deepcopy(Test_Group)
-
 local function after_each(func)
     return function()
-        func()
-        Test_Group = table.deepcopy(CLEAN_TEST_GROUP)
+        pcall(func)
+        Logger:debug("Cleaning up test group all data")
+        local allGroups = Test_Group.get_all_groups()
+        allGroups = {
+            incomplete = {},
+            skipped = {},
+            completed = {}
+        }
+        local allCounts = Test_Group.get_all_group_counts()
+        allCounts = {
+            skipped = 0,
+            failed = 0,
+            succeeded = 0
+        }
     end
 end
 
@@ -44,11 +54,12 @@ return function()
         Assert.assert_equals({}, tg.tests.skipped, "Failed validation for create test.skipped value")
         Assert.assert_equals({}, tg.tests.failed, "Failed validation for create test.failed value")
         Assert.assert_equals({}, tg.tests.succeeded, "Failed validation for create test.succeeded value")
+        Assert.assert_equals(1, #Test_Group.get_all_groups().incomplete, "Failed validation for create all groups count")
+        Assert.assert_equals(tg, Test_Group.get_all_groups().incomplete[1], "Failed validation for create all groups value")
     end)
     add_validation("create__success_single_test_raw", function()
         local name = "this_is_a_Test"
         local tg = Test_Group.create({name = name})
-        Logger:info(tg)
         Assert.assert_starts_with("Unnamed Tester #", tg.name, "Failed validation for create name value")
         Assert.assert_not_nil(rawget(tg, "tests"), "Failed validation for create tests value")
         Assert.assert_equals(1, #tg.tests.incomplete, "Failed validation for create test.incomplete count")
@@ -56,6 +67,8 @@ return function()
         Assert.assert_equals({}, tg.tests.skipped, "Failed validation for create test.skipped value")
         Assert.assert_equals({}, tg.tests.failed, "Failed validation for create test.failed value")
         Assert.assert_equals({}, tg.tests.succeeded, "Failed validation for create test.succeeded value")
+        Assert.assert_equals(1, #Test_Group.get_all_groups().incomplete, "Failed validation for create all groups count")
+        Assert.assert_equals(tg, Test_Group.get_all_groups().incomplete[1], "Failed validation for create all groups value")
     end)
     add_validation("create__success_name_and_no_tests", function()
         local name = "this_is_a_Test_Group"
@@ -66,6 +79,8 @@ return function()
         Assert.assert_equals({}, tg.tests.skipped, "Failed validation for create test.skipped value")
         Assert.assert_equals({}, tg.tests.failed, "Failed validation for create test.failed value")
         Assert.assert_equals({}, tg.tests.succeeded, "Failed validation for create test.succeeded value")
+        Assert.assert_equals(1, #Test_Group.get_all_groups().incomplete, "Failed validation for create all groups count")
+        Assert.assert_equals(tg, Test_Group.get_all_groups().incomplete[1], "Failed validation for create all groups value")
     end)
     add_validation("create__success_name_and_one_tests", function()
         local tgName = "this_is_a_Test_Group_for_single_Test"
@@ -78,6 +93,8 @@ return function()
         Assert.assert_equals({}, tg.tests.skipped, "Failed validation for create test.skipped value")
         Assert.assert_equals({}, tg.tests.failed, "Failed validation for create test.failed value")
         Assert.assert_equals({}, tg.tests.succeeded, "Failed validation for create test.succeeded value")
+        Assert.assert_equals(1, #Test_Group.get_all_groups().incomplete, "Failed validation for create all groups count")
+        Assert.assert_equals(tg, Test_Group.get_all_groups().incomplete[1], "Failed validation for create all groups value")
     end)
     add_validation("create__success_name_and_two_tests", function()
         local tgName = "this_is_a_Test_Group_for_two_Tests"
@@ -92,6 +109,8 @@ return function()
         Assert.assert_equals({}, tg.tests.skipped, "Failed validation for create test.skipped value")
         Assert.assert_equals({}, tg.tests.failed, "Failed validation for create test.failed value")
         Assert.assert_equals({}, tg.tests.succeeded, "Failed validation for create test.succeeded value")
+        Assert.assert_equals(1, #Test_Group.get_all_groups().incomplete, "Failed validation for create all groups count")
+        Assert.assert_equals(tg, Test_Group.get_all_groups().incomplete[1], "Failed validation for create all groups value")
     end)
 
 
