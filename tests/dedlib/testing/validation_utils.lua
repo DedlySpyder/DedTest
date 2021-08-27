@@ -37,6 +37,10 @@ Validation_Utils._arg_validations = {
         {
             name = "table_map",
             value = {f = "foo", b = "bar"}
+        },
+        {
+            name = "function",
+            value = function() end
         }
     },
     {
@@ -71,6 +75,10 @@ Validation_Utils._arg_validations = {
         {
             name = "table_map",
             value = {{f = "foo", b = "bar"}, {bz = "baz", q = "qux"}}
+        },
+        {
+            name = "function",
+            value = {function() end, function() end}
         }
     }
 }
