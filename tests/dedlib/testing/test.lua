@@ -12,7 +12,8 @@ end
 
 local function add_one_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
     if not testSetup then testSetup = function() end end
-    for name, validArg in pairs(Validation_Utils._arg_validations[1]) do
+    for _, validArgData in ipairs(Validation_Utils._arg_validations[1]) do
+        local name, validArg = validArgData["name"], validArgData["value"]
         add_validation(funcName .. "__func_success_one_arg_" .. name, function()
             local test = Test.create({[funcNameInTest or funcName] = function(arg)
                 Assert.assert_equals(validArg, arg)
@@ -33,7 +34,8 @@ local function add_one_arg_validations(funcName, extraAsserts, funcNameInTest, f
 end
 local function add_two_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
     if not testSetup then testSetup = function() end end
-    for name, validArgs in pairs(Validation_Utils._arg_validations[2]) do
+    for _, validArgData in ipairs(Validation_Utils._arg_validations[2]) do
+        local name, validArgs = validArgData["name"], validArgData["value"]
         add_validation(funcName .. "__func_success_two_arg_" .. name, function()
             local test = Test.create({[funcNameInTest or funcName] = function(arg1, arg2)
                 Assert.assert_equals(validArgs[1], arg1)

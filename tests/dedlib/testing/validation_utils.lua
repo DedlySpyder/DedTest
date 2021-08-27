@@ -6,24 +6,72 @@ local Validation_Utils = {}
 
 Validation_Utils._arg_validations = {
     {
-        string = "foo",
-        number = 42,
-        boolean_false = false,
-        boolean_true = true,
-        ["nil"] = nil,
-        table_empty = {},
-        table_list = {"foo"},
-        table_map = {f = "foo"}
+        {
+            name = "string",
+            value = "foo"
+        },
+        {
+            name = "number",
+            value = 42
+        },
+        {
+            name = "boolean_false",
+            value = false
+        },
+        {
+            name = "boolean_true",
+            value = true
+        },
+        {
+            name = "nil",
+            value = nil
+        },
+        {
+            name = "table_empty",
+            value = {}
+        },
+        {
+            name = "table_list",
+            value = {"foo", "bar"}
+        },
+        {
+            name = "table_map",
+            value = {f = "foo", b = "bar"}
+        }
     },
     {
-        string = {"foo", "bar"},
-        number = {42, 100},
-        boolean_false = {false, false},
-        boolean_true = {true, true},
-        ["nil"] = {nil, nil},
-        table_empty = {{}, {}},
-        table_list = {{"foo"}, {"bar"}},
-        table_map = {{f = "foo"}, {b = "bar"}}
+        {
+            name = "string",
+            value = {"foo", "bar"}
+        },
+        {
+            name = "number",
+            value = {42, 100}
+        },
+        {
+            name = "boolean_false",
+            value = {false, false}
+        },
+        {
+            name = "boolean_true",
+            value = {true, true}
+        },
+        {
+            name = "nil",
+            value = {nil, nil}
+        },
+        {
+            name = "table_empty",
+            value = {{}, {}}
+        },
+        {
+            name = "table_list",
+            value = {{"foo", "bar"}, {"baz", "qux"}}
+        },
+        {
+            name = "table_map",
+            value = {{f = "foo", b = "bar"}, {bz = "baz", q = "qux"}}
+        }
     }
 }
 
