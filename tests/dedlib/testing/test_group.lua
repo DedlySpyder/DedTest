@@ -363,6 +363,52 @@ return function()
         Assert.assert_equals("pending", test.state, "Failed validation for after state property") -- unchanged
         Assert.assert_false(test.running, "Failed validation for after running property") -- unchanged
     end)
+
+
+    -- Test_Group.run_all() validations
+    add_validation("run_all__runs_and_clears_incomplete_groups", function()
+        local groupRan = false
+        local tg = Test_Group.create({tests = {}, run = function() groupRan = true end})
+
+        Assert.assert_equals(1, #Test_Group.get_all_groups().incomplete, "Failed to insert group for testing")
+        Test_Group.run_all()
+
+        Assert.assert_true(groupRan, "Group was not run")
+        Assert.assert_equals(0, #Test_Group.get_all_groups().incomplete, "Failed to remove group after running it")
+    end)
+
+
+    -- Test_Group.adjust_globals() validations
+    add_validation("adjust_globals__completed", function()
+        local tg = Test_Group.create({})
+        tg.state = "completed"
+        tg.done = true
+        tg.tests.skipped = {{}}
+        tg.tests.failed = {{}, {}}
+        tg.tests.succeeded = {{}, {}, {}}
+
+        tg:adjust_globals()
+        Assert.assert_equals(1, #Test_Group.get_all_groups().completed, "Failed validation for all completed test groups count")
+        Assert.assert_equals_exactly(tg, Test_Group.get_all_groups().completed[1], "Failed validation for completed test group value")
+        Assert.assert_equals(1, Test_Group.get_all_group_counts().skipped, "Failed validation for skipped count")
+        Assert.assert_equals(2, Test_Group.get_all_group_counts().failed, "Failed validation for failed count")
+        Assert.assert_equals(3, Test_Group.get_all_group_counts().succeeded, "Failed validation for succeeded count")
+    end)
+    add_validation("adjust_globals__skipped", function()
+        local tg = Test_Group.create({})
+        tg.state = "skipped"
+        tg.done = true
+        tg.tests.skipped = {{}, {}, {}, {}}
+        tg.tests.failed = {{}, {}, {}, {}, {}}
+        tg.tests.succeeded = {{}, {}, {}, {}, {}, {}}
+
+        tg:adjust_globals()
+        Assert.assert_equals(1, #Test_Group.get_all_groups().skipped, "Failed validation for all skipped test groups count")
+        Assert.assert_equals_exactly(tg, Test_Group.get_all_groups().skipped[1], "Failed validation for skipped test group value")
+        Assert.assert_equals(4, Test_Group.get_all_group_counts().skipped, "Failed validation for skipped count")
+        Assert.assert_equals(5, Test_Group.get_all_group_counts().failed, "Failed validation for failed count")
+        Assert.assert_equals(6, Test_Group.get_all_group_counts().succeeded, "Failed validation for succeeded count")
+    end)
     --[[
     add_validation("", function()
         local tg = Test_Group.create({})
