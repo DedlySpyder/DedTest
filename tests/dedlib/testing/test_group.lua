@@ -18,63 +18,51 @@ local function add_validation(name, func)
     Validation_Utils.add_validation(GROUP, name, after_each(func))
 end
 
-local function add_one_arg_validations(funcName, extraAsserts, funcNameInTestGroup, funcArgsInTestGroup, testSetup)
-    if not testSetup then testSetup = function() end end
+-- These are only really keyed to before/after at the moment, look at Test validations if you need to add something else here
+local function add_one_arg_validations(funcName, extraAsserts)
     for _, validArgData in ipairs(Validation_Utils._arg_validations[1]) do
         local name, validArg = validArgData["name"], validArgData["value"]
         add_validation(funcName .. "__func_success_one_arg_" .. name, function()
             local tg = Test_Group.create({
                 tests = {},
-                [funcNameInTestGroup or funcName] = function(arg)
+                [funcName] = function(arg)
                     Assert.assert_equals(validArg, arg)
                 end,
-                [funcArgsInTestGroup or funcName .. "Args"] = {validArg}
+                [funcName .. "Args"] = {validArg}
             })
-            testSetup(tg)
 
-            if funcName == "before" or funcName == "after" then
-                local result, returnedValue = tg["run_" .. funcName](tg)
-                Assert.assert_equals(true, result, "Failed validation for before returned result")
-                Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
-            else
-                tg[funcName](tg)
-            end
+            local result, returnedValue = tg["run_" .. funcName](tg)
+            Assert.assert_equals(true, result, "Failed validation for before returned result")
+            Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
 
             extraAsserts(tg)
         end)
     end
 end
-local function add_two_arg_validations(funcName, extraAsserts, funcNameInTestGroup, funcArgsInTestGroup, testSetup)
-    if not testSetup then testSetup = function() end end
+local function add_two_arg_validations(funcName, extraAsserts)
     for _, validArgData in ipairs(Validation_Utils._arg_validations[2]) do
         local name, validArgs = validArgData["name"], validArgData["value"]
         add_validation(funcName .. "__func_success_two_arg_" .. name, function()
             local tg = Test_Group.create({
                 tests = {},
-                [funcNameInTestGroup or funcName] = function(arg1, arg2)
+                [funcName] = function(arg1, arg2)
                     Assert.assert_equals(validArgs[1], arg1)
                     Assert.assert_equals(validArgs[2], arg2)
                 end,
-                [funcArgsInTestGroup or funcName .. "Args"] = validArgs
+                [funcName .. "Args"] = validArgs
             })
-            testSetup(tg)
 
-            if funcName == "before" or funcName == "after" then
-                local result, returnedValue = tg["run_" .. funcName](tg)
-                Logger:info(tg)
-                Assert.assert_equals(true, result, "Failed validation for " .. funcName .. " returned result")
-                Assert.assert_equals(nil, returnedValue, "Failed validation for " .. funcName .. " returned value")
-            else
-                tg[funcName](tg)
-            end
+            local result, returnedValue = tg["run_" .. funcName](tg)
+            Assert.assert_equals(true, result, "Failed validation for " .. funcName .. " returned result")
+            Assert.assert_equals(nil, returnedValue, "Failed validation for " .. funcName .. " returned value")
 
             extraAsserts(tg)
         end)
     end
 end
-local function add_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
-    add_one_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
-    add_two_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
+local function add_arg_validations(funcName, extraAsserts)
+    add_one_arg_validations(funcName, extraAsserts)
+    add_two_arg_validations(funcName, extraAsserts)
 end
 
 return function()
@@ -209,7 +197,6 @@ return function()
         add_validation("validate__" .. prop .. "_good_" .. propType .. suffix, function()
             local tg = makeTestGroupForValidateTests(prop, propValue)
             -- Should succeed
-            Logger:info("Running validate for: %s", tg)
             Test_Group.validate(tg)
 
             if propType == "table" then -- Validate should change it to a list
