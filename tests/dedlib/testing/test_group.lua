@@ -137,6 +137,88 @@ return function()
     end)
 
 
+    -- Test_Group.validate()
+    local makeTestGroupForValidateTests = function(prop, propValue)
+        local t = {[prop] = propValue}
+        setmetatable(t, Test_Group)
+        return t
+    end
+    local testValidateGood = function(prop, propValue)
+        local propType = type(propValue)
+        local suffix = "_" .. serpent.line(propValue)
+        if propType == "function" then suffix = "" end
+        add_validation("validate__" .. prop .. "_good_" .. propType .. suffix, function()
+            local tg = makeTestGroupForValidateTests(prop, propValue)
+            -- Should succeed
+            Logger:info("Running validate for: %s", tg)
+            Test_Group.validate(tg)
+
+            if propType == "table" then -- Validate should change it to a list
+                if #propValue == 0 and table_size(propValue) > 0 then
+                    Assert.assert_true(#tg[prop] > 0, "Validate did not change " .. prop .. " to a list")
+                    Assert.assert_equals({propValue}, rawget(tg, prop), "Value not made into a list")
+                else
+                    Assert.assert_equals(propValue, rawget(tg, prop), "Value made into a list when not needed")
+                end
+            end
+        end)
+    end
+    local testValidateBad = function(prop, propValue)
+        local propType = type(propValue)
+        local suffix = "_" .. serpent.line(propValue)
+        if propType == "function" then suffix = "" end
+        add_validation("validate__" .. prop .. "_bad_" .. propType .. suffix, function()
+            local tg = makeTestGroupForValidateTests(prop, propValue)
+            Assert.assert_throws_error(
+                    Test_Group.validate,
+                    {tg},
+                    "failed validation for " .. prop .. ", see logs for more details",
+                    "Validate did not fail with " .. prop .. " as " .. propType
+            )
+        end)
+    end
+
+    testValidateGood("before", function() end)
+    testValidateGood("before", nil)
+    Validation_Utils.add_arg_validations(
+            1,
+            function(_, args)
+                testValidateBad("before", args)
+            end,
+            {["function"] = true, ["nil"] = true}
+    )
+
+    for _, validArgData in ipairs(Validation_Utils._arg_validations[1]) do
+        local name, args = validArgData["name"], validArgData["value"]
+        if string.sub(name, 1, math.min(5, string.len(name))) == "table" then -- Tables only
+            testValidateGood("beforeArgs", args)
+        else
+            if name ~= "nil" then
+                testValidateBad("beforeArgs", args)
+            end
+        end
+    end
+
+    testValidateGood("after", function() end)
+    testValidateGood("after", nil)
+    Validation_Utils.add_arg_validations(
+            1,
+            function(_, args)
+                testValidateBad("after", args)
+            end,
+            {["function"] = true, ["nil"] = true}
+    )
+
+    for _, validArgData in ipairs(Validation_Utils._arg_validations[1]) do
+        local name, args = validArgData["name"], validArgData["value"]
+        if string.sub(name, 1, math.min(5, string.len(name))) == "table" then -- Tables only
+            testValidateGood("afterArgs", args)
+        else
+            if name ~= "nil" then
+                testValidateBad("afterArgs", args)
+            end
+        end
+    end
     --[[
     validate (see how Test does it)
 

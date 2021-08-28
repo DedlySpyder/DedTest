@@ -83,6 +83,16 @@ Validation_Utils._arg_validations = {
     }
 }
 
+function Validation_Utils.add_arg_validations(argCount, addValidationFunc, exceptions)
+    if not exceptions then exceptions = {} end
+    for _, validationData in ipairs(Validation_Utils._arg_validations[argCount]) do
+        local name, args = validationData["name"], validationData["value"]
+        if not exceptions[name] then
+            addValidationFunc(name, args)
+        end
+    end
+end
+
 Validation_Utils.test_validations = {}
 
 function Validation_Utils.add_validation(group, name, func)
