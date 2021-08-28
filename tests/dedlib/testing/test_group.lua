@@ -18,6 +18,65 @@ local function add_validation(name, func)
     Validation_Utils.add_validation(GROUP, name, after_each(func))
 end
 
+local function add_one_arg_validations(funcName, extraAsserts, funcNameInTestGroup, funcArgsInTestGroup, testSetup)
+    if not testSetup then testSetup = function() end end
+    for _, validArgData in ipairs(Validation_Utils._arg_validations[1]) do
+        local name, validArg = validArgData["name"], validArgData["value"]
+        add_validation(funcName .. "__func_success_one_arg_" .. name, function()
+            local tg = Test_Group.create({
+                tests = {},
+                [funcNameInTestGroup or funcName] = function(arg)
+                    Assert.assert_equals(validArg, arg)
+                end,
+                [funcArgsInTestGroup or funcName .. "Args"] = {validArg}
+            })
+            testSetup(tg)
+
+            if funcName == "before" or funcName == "after" then
+                local result, returnedValue = tg["run_" .. funcName](tg)
+                Assert.assert_equals(true, result, "Failed validation for before returned result")
+                Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+            else
+                tg[funcName](tg)
+            end
+
+            extraAsserts(tg)
+        end)
+    end
+end
+local function add_two_arg_validations(funcName, extraAsserts, funcNameInTestGroup, funcArgsInTestGroup, testSetup)
+    if not testSetup then testSetup = function() end end
+    for _, validArgData in ipairs(Validation_Utils._arg_validations[2]) do
+        local name, validArgs = validArgData["name"], validArgData["value"]
+        add_validation(funcName .. "__func_success_two_arg_" .. name, function()
+            local tg = Test_Group.create({
+                tests = {},
+                [funcNameInTestGroup or funcName] = function(arg1, arg2)
+                    Assert.assert_equals(validArgs[1], arg1)
+                    Assert.assert_equals(validArgs[2], arg2)
+                end,
+                [funcArgsInTestGroup or funcName .. "Args"] = validArgs
+            })
+            testSetup(tg)
+
+            if funcName == "before" or funcName == "after" then
+                local result, returnedValue = tg["run_" .. funcName](tg)
+                Logger:info(tg)
+                Assert.assert_equals(true, result, "Failed validation for " .. funcName .. " returned result")
+                Assert.assert_equals(nil, returnedValue, "Failed validation for " .. funcName .. " returned value")
+            else
+                tg[funcName](tg)
+            end
+
+            extraAsserts(tg)
+        end)
+    end
+end
+local function add_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
+    add_one_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
+    add_two_arg_validations(funcName, extraAsserts, funcNameInTest, funcArgsInTest, testSetup)
+end
+
 return function()
     -- Test_Group.create() validations
     for _, validArgData in ipairs(Validation_Utils._arg_validations[1]) do
@@ -219,9 +278,95 @@ return function()
             end
         end
     end
-    --[[
-    validate (see how Test does it)
 
+
+    -- Test_Group.before() validations
+    add_validation("before__no_func", function()
+        local test = Test_Group.create({})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(nil, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_failure", function()
+        local errorMessage = "supposed to fail"
+        local test = Test_Group.create({tests = {}, before = function() error(errorMessage) end})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(false, result, "Failed validation for before returned result")
+        Assert.assert_ends_with(errorMessage, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("skipped", test.state, "Failed validation for before state property")
+        Assert.assert_false(test.running, "Failed validation for before running property")
+        Assert.assert_true(test.done, "Failed validation for before done property")
+    end)
+    add_validation("before__func_success_no_args", function()
+        local test = Test_Group.create({tests = {}, before = function() end})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+    add_validation("before__func_success_no_args_returned_value", function()
+        local expectedReturnedValue = "foo"
+        local test = Test_Group.create({tests = {}, before = function() return expectedReturnedValue end})
+        local result, returnedValue = test:run_before()
+
+        Assert.assert_equals(true, result, "Failed validation for before returned result")
+        Assert.assert_equals(expectedReturnedValue, returnedValue, "Failed validation for before returned value")
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+
+    add_arg_validations("before", function(test)
+        Assert.assert_equals("running", test.state, "Failed validation for before state property")
+        Assert.assert_true(test.running, "Failed validation for before running property")
+    end)
+
+
+    -- Test_Group.after() validations
+    add_validation("after__no_func", function()
+        local test = Test_Group.create({})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(nil, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_failure", function()
+        local errorMessage = "supposed to fail"
+        local test = Test_Group.create({tests = {}, after = function() error(errorMessage) end})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(false, result, "Failed validation for after returned result")
+        Assert.assert_ends_with(errorMessage, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_no_args", function()
+        local test = Test_Group.create({tests = {}, after = function() end})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(nil, returnedValue, "Failed validation for after returned value")
+    end)
+    add_validation("after__func_success_no_args_returned_value", function()
+        local expectedReturnedValue = "foo"
+        local test = Test_Group.create({tests = {}, after = function() return expectedReturnedValue end})
+        local result, returnedValue = test:run_after()
+
+        Assert.assert_equals(true, result, "Failed validation for after returned result")
+        Assert.assert_equals(expectedReturnedValue, returnedValue, "Failed validation for after returned value")
+    end)
+
+    add_arg_validations("after", function(test)
+        Assert.assert_equals("pending", test.state, "Failed validation for after state property") -- unchanged
+        Assert.assert_false(test.running, "Failed validation for after running property") -- unchanged
+    end)
+    --[[
+    add_validation("", function()
+        local tg = Test_Group.create({})
+    end)
     before
     after
     run_all?
