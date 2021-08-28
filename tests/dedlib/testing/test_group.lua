@@ -409,6 +409,152 @@ return function()
         Assert.assert_equals(5, Test_Group.get_all_group_counts().failed, "Failed validation for failed count")
         Assert.assert_equals(6, Test_Group.get_all_group_counts().succeeded, "Failed validation for succeeded count")
     end)
+
+
+    -- Test_Group.run() validations
+    add_validation("run__already_done", function()
+        local tg = Test_Group.create({})
+        tg.done = true
+        tg:run()
+
+        Assert.assert_nil(rawget(tg, "state"), "Failed validation for run state value")
+    end)
+    add_validation("run__running_tests_success", function()
+        local afterRan, globalsAdjusted = false, false
+        local tg = Test_Group.create({
+            tests = {},
+            after = function() afterRan = true end,
+            adjust_globals = function() globalsAdjusted = true end
+        })
+        local stubTestRunFunc = function()
+            if afterRan then error("After test group ran before this test") end
+        end
+        tg.tests.incomplete = {
+            {run = stubTestRunFunc, state = "succeeded"}
+        }
+        tg.state = "running"
+        tg:run()
+
+        Assert.assert_equals("completed", tg.state, "State after run is invalid")
+        Assert.assert_true(tg.done, "Done value is invalid after run")
+        Assert.assert_true(afterRan, "After function did not run")
+        Assert.assert_true(globalsAdjusted, "Globals were not adjusted after run")
+        Assert.assert_equals(0, #tg.tests.incomplete, "Failed validation for count of incomplete tests")
+        Assert.assert_equals(1, #tg.tests.succeeded, "Failed validation for count of succeeded tests")
+        Assert.assert_equals(0, #tg.tests.skipped, "Failed validation for count of skipped tests")
+        Assert.assert_equals(0, #tg.tests.failed, "Failed validation for count of failed tests")
+    end)
+    add_validation("run__running_tests_skipped", function()
+        local afterRan, globalsAdjusted = false, false
+        local tg = Test_Group.create({
+            tests = {},
+            after = function() afterRan = true end,
+            adjust_globals = function() globalsAdjusted = true end
+        })
+        local stubTestRunFunc = function()
+            if afterRan then error("After test group ran before this test") end
+        end
+        tg.tests.incomplete = {
+            {run = stubTestRunFunc, state = "skipped"}
+        }
+        tg.state = "running"
+        tg:run()
+
+        Assert.assert_equals("completed", tg.state, "State after run is invalid")
+        Assert.assert_true(tg.done, "Done value is invalid after run")
+        Assert.assert_true(afterRan, "After function did not run")
+        Assert.assert_true(globalsAdjusted, "Globals were not adjusted after run")
+        Assert.assert_equals(0, #tg.tests.incomplete, "Failed validation for count of incomplete tests")
+        Assert.assert_equals(0, #tg.tests.succeeded, "Failed validation for count of succeeded tests")
+        Assert.assert_equals(1, #tg.tests.skipped, "Failed validation for count of skipped tests")
+        Assert.assert_equals(0, #tg.tests.failed, "Failed validation for count of failed tests")
+    end)
+    add_validation("run__running_tests_failed", function()
+        local afterRan, globalsAdjusted = false, false
+        local tg = Test_Group.create({
+            tests = {},
+            after = function() afterRan = true end,
+            adjust_globals = function() globalsAdjusted = true end
+        })
+        local stubTestRunFunc = function()
+            if afterRan then error("After test group ran before this test") end
+        end
+        tg.tests.incomplete = {
+            {run = stubTestRunFunc, state = "failed"}
+        }
+        tg.state = "running"
+        tg:run()
+
+        Assert.assert_equals("completed", tg.state, "State after run is invalid")
+        Assert.assert_true(tg.done, "Done value is invalid after run")
+        Assert.assert_true(afterRan, "After function did not run")
+        Assert.assert_true(globalsAdjusted, "Globals were not adjusted after run")
+        Assert.assert_equals(0, #tg.tests.incomplete, "Failed validation for count of incomplete tests")
+        Assert.assert_equals(0, #tg.tests.succeeded, "Failed validation for count of succeeded tests")
+        Assert.assert_equals(0, #tg.tests.skipped, "Failed validation for count of skipped tests")
+        Assert.assert_equals(1, #tg.tests.failed, "Failed validation for count of failed tests")
+    end)
+    add_validation("run__running_tests_mixed_bag", function()
+        local afterRan, globalsAdjusted = false, false
+        local tg = Test_Group.create({
+            tests = {},
+            after = function() afterRan = true end,
+            adjust_globals = function() globalsAdjusted = true end
+        })
+        local stubTestRunFunc = function()
+            if afterRan then error("After test group ran before this test") end
+        end
+        tg.tests.incomplete = {
+            {run = stubTestRunFunc, state = "succeeded"},
+            {run = stubTestRunFunc, state = "skipped"},
+            {run = stubTestRunFunc, state = "skipped"},
+            {run = stubTestRunFunc, state = "failed"},
+            {run = stubTestRunFunc, state = "failed"},
+            {run = stubTestRunFunc, state = "failed"}
+        }
+        tg.state = "running"
+        tg:run()
+
+        Assert.assert_equals("completed", tg.state, "State after run is invalid")
+        Assert.assert_true(tg.done, "Done value is invalid after run")
+        Assert.assert_true(afterRan, "After function did not run")
+        Assert.assert_true(globalsAdjusted, "Globals were not adjusted after run")
+        Assert.assert_equals(0, #tg.tests.incomplete, "Failed validation for count of incomplete tests")
+        Assert.assert_equals(1, #tg.tests.succeeded, "Failed validation for count of succeeded tests")
+        Assert.assert_equals(2, #tg.tests.skipped, "Failed validation for count of skipped tests")
+        Assert.assert_equals(3, #tg.tests.failed, "Failed validation for count of failed tests")
+    end)
+    add_validation("run__pending_before_success", function()
+        local beforeRan, skipTestsRan, testsRunning = false, false, false
+        local tg = Test_Group.create({
+            tests = {function() testsRunning = true end},
+            before = function() beforeRan = true end,
+            skip_tests = function() skipTestsRan = true end,
+        })
+        tg.state = "pending"
+        tg:run()
+
+        Assert.assert_true(beforeRan, "Before func did not run on pending test group")
+        Assert.assert_false(skipTestsRan, "Skip tests ran when before succeeded")
+        Assert.assert_true(testsRunning, "Tests func did not run on pending test group")
+    end)
+    add_validation("run__pending_before_failed", function()
+        local beforeRan, skipTestsRan, testsRunning = false, false, false
+        local tg = Test_Group.create({
+            tests = {function() testsRunning = true end},
+            before = function()
+                beforeRan = true
+                error("i failed")
+            end,
+            skip_tests = function() skipTestsRan = true end
+        })
+        tg.state = "pending"
+        tg:run()
+
+        Assert.assert_true(beforeRan, "Before func did not run on pending test group")
+        Assert.assert_true(skipTestsRan, "Skip tests did not run on skipped test group")
+        Assert.assert_false(testsRunning, "Tests func ran on skipped test group")
+    end)
     --[[
     add_validation("", function()
         local tg = Test_Group.create({})
