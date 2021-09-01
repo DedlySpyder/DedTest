@@ -157,6 +157,20 @@ return function()
         Assert.assert_equals(tg2, Test_Group.get_all_groups().incomplete[2], "Failed validation for create all groups value")
     end)
 
+    add_validation("create__no_op_with_test_group", function()
+        local args = {__which = "Test_Group"}
+        local test = Test_Group.create(args)
+
+        Assert.assert_equals_exactly(args, test, "Test as arg did not return test")
+        for k, v in pairs(test) do
+            if k == "__which" then
+                Assert.assert_equals("Test_Group", v, "__which was changed")
+            else
+                error("Unexpected key exists <" .. k .. "> with value: " .. serpent.line(v))
+            end
+        end
+    end)
+
 
     -- Test_Group.generate_name() validations
     add_validation("generate_name__string", function()
