@@ -1,5 +1,3 @@
-local Logger = require("__DedLib__/modules/logger").create{modName = "DedLib"} -- TODO - removeme - for debugging
-
 local Test_Group = require("__DedLib__/modules/testing/test_group")
 local Assert = require("__DedLib__/modules/testing/assert")
 
@@ -542,16 +540,21 @@ return function()
         Assert.assert_true(skipTestsRan, "Skip tests did not run on skipped test group")
         Assert.assert_false(testsRunning, "Tests func ran on skipped test group")
     end)
-    --[[
-    add_validation("", function()
-        local tg = Test_Group.create({})
+
+
+    -- Test_Group.skip_tests() validations
+    add_validation("skip_tests__two_tests", function()
+        local tg = Test_Group.create({tests = {{}, {}}})
+        Assert.assert_equals(2, #tg.tests.incomplete, "Failed pre-validation of incomplete tests")
+        tg:skip_tests()
+
+        Assert.assert_equals(2, #tg.tests.skipped, "Skipped tests not in skipped table")
+        Assert.assert_equals(0, #tg.tests.incomplete, "Tests are still in incomplete table")
+        for _, t in ipairs(tg.tests.skipped) do
+            Assert.assert_starts_with("Test group skipped", t.error, "Failed validation for test error reason")
+            Assert.assert_starts_with("skipped", t.state, "Failed validation for test state")
+        end
     end)
-    before
-    after
-    run_all?
-    run
-    - all state
-    skip_tests
-    --]]
+
     return Validation_Utils.validate(GROUP)
 end
