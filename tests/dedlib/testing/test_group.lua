@@ -195,6 +195,19 @@ return function()
     end)
 
 
+    -- Test_Group.add_test() Validation
+    add_validation("add_test__existing_tg", function()
+        local tg = Test_Group.create({})
+        Assert.assert_not_nil(rawget(tg, "tests"), "Failed pre-validation for tests value")
+        Assert.assert_equals(0, #tg.tests.incomplete, "Failed pre-validation for test.incomplete count")
+
+        local testName = "this_is_a_Test"
+        tg:add_test({name = testName})
+        Assert.assert_equals(1, #tg.tests.incomplete, "Failed pre-validation for test.incomplete count")
+        Assert.assert_equals(testName, tg.tests.incomplete[1].name, "Failed validation for create test's name")
+    end)
+
+
     -- Test_Group.generate_name() validations
     add_validation("generate_name__string", function()
         local name = "foo"
