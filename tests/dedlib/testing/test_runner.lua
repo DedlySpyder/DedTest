@@ -48,8 +48,8 @@ return function()
     end)
 
 
-    -- Test_Runner.add_tests() validations
-    add_validation("add_tests__basic", function()
+    -- Test_Runner.add_test_group() validations
+    add_validation("add_test_group__basic", function()
         local testName = "test"
         local test = {name = testName}
         local name = "test_group"
@@ -63,7 +63,7 @@ return function()
         Assert.assert_equals(1, #testGroup.tests.incomplete, "Test group tests count mismatch")
         Assert.assert_equals(testName, testGroup.tests.incomplete[1].name, "Test group tests[1] name mismatch")
     end)
-    add_validation("add_tests__test_group_no_op", function()
+    add_validation("add_test_group__test_group_no_op", function()
         local name = "test_group"
         local test_group = Test_Group.create({name = name})
         Test_Runner.add_test_group(test_group)
