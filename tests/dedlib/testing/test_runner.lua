@@ -73,6 +73,58 @@ return function()
     end)
 
 
+    -- Test_Runner.add_external_results() validations
+    add_validation("add_external_results__one_set", function()
+        Test_Runner.add_external_results({
+            skipped = 1,
+            failed = 2,
+            succeeded = 3
+        })
+
+        Assert.assert_equals(1, Test_Runner.EXTERNAL_RESULT_COUNTS.skipped, "Skipped count mismatch")
+        Assert.assert_equals(2, Test_Runner.EXTERNAL_RESULT_COUNTS.failed, "Failed count mismatch")
+        Assert.assert_equals(3, Test_Runner.EXTERNAL_RESULT_COUNTS.succeeded, "Succeeded count mismatch")
+    end)
+    add_validation("add_external_results__two_sets", function()
+        Test_Runner.add_external_results({
+            skipped = 1,
+            failed = 2,
+            succeeded = 3
+        })
+        Test_Runner.add_external_results({
+            skipped = 1,
+            failed = 2,
+            succeeded = 3
+        })
+
+        Assert.assert_equals(2, Test_Runner.EXTERNAL_RESULT_COUNTS.skipped, "Skipped count mismatch")
+        Assert.assert_equals(4, Test_Runner.EXTERNAL_RESULT_COUNTS.failed, "Failed count mismatch")
+        Assert.assert_equals(6, Test_Runner.EXTERNAL_RESULT_COUNTS.succeeded, "Succeeded count mismatch")
+    end)
+    Validation_Utils.add_arg_validations(
+            1,
+            function(name, args)
+                add_validation("add_external_results__junk_no_op_" .. name, function()
+                    Test_Runner.add_external_results(args)
+                    Assert.assert_equals(0, Test_Runner.EXTERNAL_RESULT_COUNTS.skipped, "Skipped count mismatch")
+                    Assert.assert_equals(0, Test_Runner.EXTERNAL_RESULT_COUNTS.failed, "Failed count mismatch")
+                    Assert.assert_equals(0, Test_Runner.EXTERNAL_RESULT_COUNTS.succeeded, "Succeeded count mismatch")
+                end)
+            end
+    )
+    Validation_Utils.add_arg_validations(
+            2,
+            function(name, args)
+                add_validation("add_external_results__junk_no_op_" .. name, function()
+                    Test_Runner.add_external_results(args)
+                    Assert.assert_equals(0, Test_Runner.EXTERNAL_RESULT_COUNTS.skipped, "Skipped count mismatch")
+                    Assert.assert_equals(0, Test_Runner.EXTERNAL_RESULT_COUNTS.failed, "Failed count mismatch")
+                    Assert.assert_equals(0, Test_Runner.EXTERNAL_RESULT_COUNTS.succeeded, "Succeeded count mismatch")
+                end)
+            end
+    )
+
+
     -- Test_Runner.run() validations
     add_validation("run__calls_run_method", function()
         local groupRan = false
