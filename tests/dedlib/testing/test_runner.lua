@@ -212,5 +212,41 @@ return function()
     end)
 
 
+    -- Test_Runner.print_pretty_report() validations
+    -- Nothing _really_ to validate here, besides that the report print doesn't fail
+    add_validation("print_pretty_report__no_tests", function()
+        Test_Runner.print_pretty_report()
+    end)
+    add_validation("print_pretty_report__internal_counts", function()
+        Test_Runner.ALL_TEST_GROUPS_COUNTS = {
+            skipped = 1,
+            failed = 2,
+            succeeded = 3
+        }
+        Test_Runner.print_pretty_report()
+    end)
+    add_validation("print_pretty_report__external_counts", function()
+        Test_Runner.EXTERNAL_RESULT_COUNTS = {
+            skipped = 4,
+            failed = 5,
+            succeeded = 6
+        }
+        Test_Runner.print_pretty_report()
+    end)
+    add_validation("print_pretty_report__all_counts", function()
+        Test_Runner.ALL_TEST_GROUPS_COUNTS = {
+            skipped = 7,
+            failed = 8,
+            succeeded = 9
+        }
+        Test_Runner.EXTERNAL_RESULT_COUNTS = {
+            skipped = 10,
+            failed = 11,
+            succeeded = 12
+        }
+        Test_Runner.print_pretty_report()
+    end)
+
+
     return Validation_Utils.validate(GROUP)
 end
