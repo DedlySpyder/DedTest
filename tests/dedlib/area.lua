@@ -3,6 +3,7 @@ local Tester = require("__DedLib__/modules/testing/tester")
 local Area = require("__DedLib__/modules/area")
 
 local AreaTests = {}
+AreaTests.name = "Area"
 
 
 -- Bounding_box standardizing tests

@@ -2,6 +2,7 @@ local CustomEvents = require("__DedLib__/modules/events/custom_events")
 local Assert = require("__DedLib__/modules/testing/assert")
 
 local CustomEventsTests = {}
+CustomEventsTests.name = "Custom_Events"
 
 
 -- Register Event Tests

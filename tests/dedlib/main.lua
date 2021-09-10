@@ -1,7 +1,7 @@
 -- TODO - this can all be a new mod?
 -- TODO - should probably still have tests on the functions that wrap other ones, just to make sure they don't break (missing return or something dumb happens)
 local Logger = require("__DedLib__/modules/logger").create("DedLib_Testing")
-local Tester = require("__DedLib__/modules/testing/tester")
+local Test_Runner = require("__DedLib__/modules/testing/test_runner")
 
 local assert = require("testing/assert")
 local mock = require("testing/mock")
@@ -44,19 +44,21 @@ return function()
 
     Logger:info("Tester validation results: %s", tester_results)
 
-    Tester.add_external_results(tester_results)
+    -- This needs to be after test_runner validations, as it resets the Test_Runner
+    Test_Runner.add_external_results(tester_results)
 
     -- Run other tests
     -- Modules are tested in dependency order (all depend on logger for example)
-    Tester.add_tests(stringify, "Stringify")
-    Tester.add_tests(logger, "Logger")
+    Test_Runner.add_test_group(stringify)
+    Test_Runner.add_test_group(logger)
 
-    Tester.add_tests(position, "Position")
-    Tester.add_tests(area, "Area")
+    Test_Runner.add_test_group(position)
+    Test_Runner.add_test_group(area)
 
-    Tester.add_tests(entity, "Entity")
+    Test_Runner.add_test_group(entity)
 
-    Tester.add_tests(custom_events, "CustomEvents")
+    Test_Runner.add_test_group(custom_events)
 
-    Tester.run()
+    Test_Runner.run()
+    Test_Runner.print_pretty_report()
 end

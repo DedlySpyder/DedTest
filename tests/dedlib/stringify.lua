@@ -4,6 +4,7 @@ local Assert = require("__DedLib__/modules/testing/assert")
 local Util = require("__DedLib__/modules/util")
 
 local StringifyTests = {}
+StringifyTests.name = "Stringify"
 
 
 -- One of each Lua Object from Factorio, mapped by their object_name

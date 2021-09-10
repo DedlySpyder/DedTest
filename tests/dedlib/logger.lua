@@ -2,6 +2,7 @@ local Logger = require("__DedLib__/modules/logger")
 local Assert = require("__DedLib__/modules/testing/assert")
 
 local LoggerTests = {}
+LoggerTests.name = "Logger"
 
 
 -- Create Tests -- TODO - testing - test for mod_name default in data stage? (somehow?)

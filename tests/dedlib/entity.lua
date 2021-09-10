@@ -4,6 +4,7 @@ local Area = require("__DedLib__/modules/area")
 local Entity = require("__DedLib__/modules/entity")
 
 local EntityTests = {}
+EntityTests.name = "Entity"
 
 
 -- Entity.area_of_bounding_box tests

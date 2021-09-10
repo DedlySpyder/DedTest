@@ -3,6 +3,7 @@ local Tester = require("__DedLib__/modules/testing/tester")
 local Position = require("__DedLib__/modules/position")
 
 local PositionTests = {}
+PositionTests.name = "Position"
 
 
 -- Position standardizing tests
