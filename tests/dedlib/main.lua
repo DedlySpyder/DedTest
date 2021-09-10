@@ -8,7 +8,6 @@ local mock = require("testing/mock")
 local test = require("testing/test")
 local test_group = require("testing/test_group")
 local test_runner = require("testing/test_runner")
-local tester = require("testing/tester")
 
 local stringify = require("stringify")
 local logger = require("logger")
@@ -42,7 +41,6 @@ return function()
     add_tester_results(test())
     add_tester_results(test_group())
     add_tester_results(test_runner())
-    --add_tester_results(tester()) --TODO - needs rewrite for the new abstraction
 
     Logger:info("Tester validation results: %s", tester_results)
 
