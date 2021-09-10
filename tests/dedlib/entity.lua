@@ -1,4 +1,5 @@
-local Tester = require("__DedLib__/modules/testing/tester")
+local Assert = require("__DedLib__/modules/testing/assert")
+local Mock = require("__DedLib__/modules/testing/mock")
 
 local Area = require("__DedLib__/modules/area")
 local Entity = require("__DedLib__/modules/entity")
@@ -98,7 +99,10 @@ for _, data in ipairs(areaOfBoundingBoxTests) do
     local size = data["size"]
     local name = "test_area_of_entity__lf_x_" .. bb[1][1] .. "_y_" .. bb[1][2] .. "__rb_x_" .. bb[2][1] .. "_y_" .. bb[2][2] .. "__expected_" .. size
 
-    EntityTests[name] = Tester.create_basic_test(Entity.area_of_bounding_box, size, bb)
+    EntityTests[name] = function()
+        local actual = Entity.area_of_bounding_box(bb)
+        Assert.assert_equals(size, actual, "Input failed for arg: " .. serpent.line(bb))
+    end
 end
 
 
@@ -109,7 +113,7 @@ function EntityTests.test_area_of_bounding_box_lt_rb()
     local actual = Entity.area_of_bounding_box_lt_rb(test1, test2)
     local expected = 9
 
-    Tester.Assert.assert_equals(expected, actual,
+    Assert.assert_equals(expected, actual,
             string.format("Input failed: <%s> - <%s>", serpent.line(test1), serpent.line(test2))
     )
 end
@@ -119,7 +123,7 @@ function EntityTests.test_area_of_bounding_box_lt_rb_invalid()
     local test2 = nil
     local actual = Entity.area_of_bounding_box_lt_rb(test1, test2)
 
-    Tester.Assert.assert_equals(nil, actual,
+    Assert.assert_equals(nil, actual,
             string.format("Input failed: <%s> - <%s>", serpent.line(test1), serpent.line(test2))
     )
 end
@@ -170,9 +174,12 @@ for _, data in ipairs(areaOfByChunksAndVerticesTests) do
     local expected = data["expected"]
     local vertices = Area.get_bounding_box_vertices(data["bb"]) --{{-1,-3}, {1,-1}}
 
-    local entity = Tester.Mock.get_valid_lua_object({bounding_box = vertices, name = name})
+    local entity = Mock.get_valid_lua_object({ bounding_box = vertices, name = name})
 
-    EntityTests[name] = Tester.create_basic_test(Entity._area_of_by_chunks_and_vertices, expected, entity, chunks, vertices)
+    EntityTests[name] = function()
+        local actual = Entity._area_of_by_chunks_and_vertices(entity, chunks, vertices)
+        Assert.assert_equals(expected, actual, "Input failed for arg: " .. serpent.line({entity, chunks, vertices}))
+    end
 end
 
 
@@ -192,10 +199,13 @@ local chunksOfEntityTests = {
 for _, data in ipairs(chunksOfEntityTests) do
     local bb = data["bb"]
     local name = "test_chunks_of__lf_x_" .. bb[1][1] .. "_y_" .. bb[1][2] .. "__rb_x_" .. bb[2][1] .. "_y_" .. bb[2][2]
-    local entity = Tester.Mock.get_valid_lua_object({bounding_box = Area.standardize_bounding_box(bb), name = name})
+    local entity = Mock.get_valid_lua_object({ bounding_box = Area.standardize_bounding_box(bb), name = name})
     local chunks = data["chunks"]
 
-    EntityTests[name] = Tester.create_basic_test(Entity.chunks_of, chunks, entity)
+    EntityTests[name] = function()
+        local actual = Entity.chunks_of(entity)
+        Assert.assert_equals(chunks, actual, "Input failed for arg: " .. serpent.line(entity))
+    end
 end
 
 

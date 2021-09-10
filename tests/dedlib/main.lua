@@ -34,7 +34,7 @@ end
 
 return function()
     Logger:info("Running tests for DedLib")
-    Logger:info("Running Tester module validations")
+    Logger:info("Running testing validations")
     -- Test the tester first
     add_tester_results(assert())
     add_tester_results(mock())
@@ -42,7 +42,7 @@ return function()
     add_tester_results(test_group())
     add_tester_results(test_runner())
 
-    Logger:info("Tester validation results: %s", tester_results)
+    Logger:info("Testing validation results: %s", tester_results)
 
     -- This needs to be after test_runner validations, as it resets the Test_Runner
     Test_Runner.add_external_results(tester_results)
