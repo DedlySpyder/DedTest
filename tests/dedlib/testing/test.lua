@@ -174,7 +174,7 @@ return function()
         local args = {}
         local tests = Test.create_multiple(args)
 
-        Assert.assert_equals(0, #tests, "Wrong number of tests returned")
+        Assert.assert_equals(0, table_size(tests), "Wrong number of tests returned")
     end)
     add_validation("create_multiple__table_list_1", function()
         local args = {{}}
