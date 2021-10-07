@@ -43,8 +43,8 @@ return function()
         local testGroup = Test_Runner.ALL_TEST_GROUPS.incomplete[1]
         Assert.assert_equals("Test_Group", testGroup.__which, "Test group was not created correctly: " .. serpent.line(testGroup))
         Assert.assert_equals(name, testGroup.name, "Test group name mismatch")
-        Assert.assert_equals(1, #testGroup.tests.incomplete, "Test group tests count mismatch")
-        Assert.assert_equals(testName, testGroup.tests.incomplete[1].name, "Test group tests[1] name mismatch")
+        Assert.assert_equals(1, table_size(testGroup.tests.incomplete), "Test group tests count mismatch")
+        Assert.assert_equals(testName, testGroup.tests.incomplete[testName].name, "Test group tests[1] name mismatch")
     end)
 
 
@@ -60,8 +60,8 @@ return function()
         local testGroup = Test_Runner.ALL_TEST_GROUPS.incomplete[1]
         Assert.assert_equals("Test_Group", testGroup.__which, "Test group was not created correctly: " .. serpent.line(testGroup))
         Assert.assert_equals(name, testGroup.name, "Test group name mismatch")
-        Assert.assert_equals(1, #testGroup.tests.incomplete, "Test group tests count mismatch")
-        Assert.assert_equals(testName, testGroup.tests.incomplete[1].name, "Test group tests[1] name mismatch")
+        Assert.assert_equals(1, table_size(testGroup.tests.incomplete), "Test group tests count mismatch")
+        Assert.assert_equals(testName, testGroup.tests.incomplete[testName].name, "Test group tests[1] name mismatch")
     end)
     add_validation("add_test_group__test_group_no_op", function()
         local name = "test_group"
