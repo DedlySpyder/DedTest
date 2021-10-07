@@ -194,6 +194,31 @@ return function()
             Assert.assert_equals_exactly("Test", test.__which, "Test not returned")
         end
     end)
+    add_validation("create_multiple__table_list_named", function()
+        local test1Name = "test_1"
+        local test2Name = "test_2"
+        local args = {{name = test1Name}, {name = test2Name}}
+        local tests = Test.create_multiple(args)
+
+        Assert.assert_equals(2, table_size(tests), "Wrong number of tests returned")
+        Assert.assert_equals_exactly("Test", tests[test1Name].__which, "Test1 not returned")
+        Assert.assert_equals_exactly(test1Name, tests[test1Name].name, "Test1 name wrong")
+        Assert.assert_equals_exactly("Test", tests[test2Name].__which, "Test2 not returned")
+        Assert.assert_equals_exactly(test2Name, tests[test2Name].name, "Test2 name wrong")
+    end)
+    add_validation("create_multiple__table_list_named_duplicates", function()
+        local test1Name = "test_1"
+        local test1Func = function() end
+        local test2Func = function() end
+        local args = {{name = test1Name, func = test1Func}, {name = test1Name, func = test2Func}}
+        local tests = Test.create_multiple(args)
+
+        -- Latest test wins on name collisions
+        Assert.assert_equals(1, table_size(tests), "Wrong number of tests returned")
+        Assert.assert_equals_exactly("Test", tests[test1Name].__which, "Test1 not returned")
+        Assert.assert_equals_exactly(test1Name, tests[test1Name].name, "Test1 name wrong")
+        Assert.assert_equals_exactly(test2Func, tests[test1Name].func, "Test1 func wrong")
+    end)
     add_validation("create_multiple__table_map_1", function()
         local args = {test_foo = {}}
         local tests = Test.create_multiple(args)
