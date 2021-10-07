@@ -115,8 +115,8 @@ return function()
         local tg = Test_Group.create({name = tgName, tests = {{name = name}}})
         Assert.assert_starts_with(tgName, tg.name, "Failed validation for create name value")
         Assert.assert_not_nil(rawget(tg, "tests"), "Failed validation for create tests value")
-        Assert.assert_equals(1, #tg.tests.incomplete, "Failed validation for create test.incomplete count")
-        Assert.assert_equals(name, tg.tests.incomplete[1].name, "Failed validation for create first test's name")
+        Assert.assert_equals(1, table_size(tg.tests.incomplete), "Failed validation for create test.incomplete count")
+        Assert.assert_equals(name, tg.tests.incomplete[name].name, "Failed validation for create first test's name")
         Assert.assert_equals({}, tg.tests.skipped, "Failed validation for create test.skipped value")
         Assert.assert_equals({}, tg.tests.failed, "Failed validation for create test.failed value")
         Assert.assert_equals({}, tg.tests.succeeded, "Failed validation for create test.succeeded value")
@@ -124,13 +124,13 @@ return function()
     add_validation("create__success_name_and_two_tests", function()
         local tgName = "this_is_a_Test_Group_for_two_Tests"
         local t1Name = "this_is_the_first_Test"
-        local t2Name = "this_is_the_first_Test"
+        local t2Name = "this_is_the_second_Test"
         local tg = Test_Group.create({name = tgName, tests = {{name = t1Name}, {name = t2Name}}})
         Assert.assert_starts_with(tgName, tg.name, "Failed validation for create name value")
         Assert.assert_not_nil(rawget(tg, "tests"), "Failed validation for create tests value")
-        Assert.assert_equals(2, #tg.tests.incomplete, "Failed validation for create test.incomplete count")
-        Assert.assert_equals(t1Name, tg.tests.incomplete[1].name, "Failed validation for create first test's name")
-        Assert.assert_equals(t2Name, tg.tests.incomplete[2].name, "Failed validation for create second test's name")
+        Assert.assert_equals(2, table_size(tg.tests.incomplete), "Failed validation for create test.incomplete count")
+        Assert.assert_equals(t1Name, tg.tests.incomplete[t1Name].name, "Failed validation for create first test's name")
+        Assert.assert_equals(t2Name, tg.tests.incomplete[t2Name].name, "Failed validation for create second test's name")
         Assert.assert_equals({}, tg.tests.skipped, "Failed validation for create test.skipped value")
         Assert.assert_equals({}, tg.tests.failed, "Failed validation for create test.failed value")
         Assert.assert_equals({}, tg.tests.succeeded, "Failed validation for create test.succeeded value")
@@ -142,8 +142,8 @@ return function()
         local tg = Test_Group.create({name = name, tests = {}, [testName] = {}})
         Assert.assert_starts_with(name, tg.name, "Failed validation for create name value")
         Assert.assert_not_nil(rawget(tg, "tests"), "Failed validation for create tests value")
-        Assert.assert_equals(1, #tg.tests.incomplete, "Failed validation for create test.incomplete count")
-        Assert.assert_equals(testName, tg.tests.incomplete[1].name, "Failed validation for create test's name")
+        Assert.assert_equals(1, table_size(tg.tests.incomplete), "Failed validation for create test.incomplete count")
+        Assert.assert_equals(testName, tg.tests.incomplete[testName].name, "Failed validation for create test's name")
         Assert.assert_equals({}, tg.tests.skipped, "Failed validation for create test.skipped value")
         Assert.assert_equals({}, tg.tests.failed, "Failed validation for create test.failed value")
         Assert.assert_equals({}, tg.tests.succeeded, "Failed validation for create test.succeeded value")
@@ -153,8 +153,8 @@ return function()
         local tg = Test_Group.create({name = name, tests = {}, [1] = {}})
         Assert.assert_starts_with(name, tg.name, "Failed validation for create name value")
         Assert.assert_not_nil(rawget(tg, "tests"), "Failed validation for create tests value")
-        Assert.assert_equals(1, #tg.tests.incomplete, "Failed validation for create test.incomplete count")
-        Assert.assert_equals("Unnamed Test #1", tg.tests.incomplete[1].name, "Failed validation for create test's name")
+        Assert.assert_equals(1, table_size(tg.tests.incomplete), "Failed validation for create test.incomplete count")
+        Assert.assert_equals("Unnamed Test #1", tg.tests.incomplete["Unnamed Test #1"].name, "Failed validation for create test's name")
         Assert.assert_equals({}, tg.tests.skipped, "Failed validation for create test.skipped value")
         Assert.assert_equals({}, tg.tests.failed, "Failed validation for create test.failed value")
         Assert.assert_equals({}, tg.tests.succeeded, "Failed validation for create test.succeeded value")
@@ -165,9 +165,9 @@ return function()
         local tg = Test_Group.create({name = name, tests = {}, [testName] = {}, [1] = {}})
         Assert.assert_starts_with(name, tg.name, "Failed validation for create name value")
         Assert.assert_not_nil(rawget(tg, "tests"), "Failed validation for create tests value")
-        Assert.assert_equals(2, #tg.tests.incomplete, "Failed validation for create test.incomplete count")
-        Assert.assert_equals("Unnamed Test #1", tg.tests.incomplete[1].name, "Failed validation for create first test's name")
-        Assert.assert_equals(testName, tg.tests.incomplete[2].name, "Failed validation for create second test's name")
+        Assert.assert_equals(2, table_size(tg.tests.incomplete), "Failed validation for create test.incomplete count")
+        Assert.assert_equals("Unnamed Test #1", tg.tests.incomplete["Unnamed Test #1"].name, "Failed validation for create first test's name")
+        Assert.assert_equals(testName, tg.tests.incomplete[testName].name, "Failed validation for create second test's name")
         Assert.assert_equals({}, tg.tests.skipped, "Failed validation for create test.skipped value")
         Assert.assert_equals({}, tg.tests.failed, "Failed validation for create test.failed value")
         Assert.assert_equals({}, tg.tests.succeeded, "Failed validation for create test.succeeded value")
@@ -199,12 +199,12 @@ return function()
     add_validation("add_test__existing_tg", function()
         local tg = Test_Group.create({})
         Assert.assert_not_nil(rawget(tg, "tests"), "Failed pre-validation for tests value")
-        Assert.assert_equals(0, #tg.tests.incomplete, "Failed pre-validation for test.incomplete count")
+        Assert.assert_equals(0, table_size(tg.tests.incomplete), "Failed pre-validation for test.incomplete count")
 
         local testName = "this_is_a_Test"
         tg:add_test({name = testName})
-        Assert.assert_equals(1, #tg.tests.incomplete, "Failed pre-validation for test.incomplete count")
-        Assert.assert_equals(testName, tg.tests.incomplete[1].name, "Failed validation for create test's name")
+        Assert.assert_equals(1, table_size(tg.tests.incomplete), "Failed pre-validation for test.incomplete count")
+        Assert.assert_equals(testName, tg.tests.incomplete[testName].name, "Failed validation for create test's name")
     end)
 
 
@@ -418,7 +418,7 @@ return function()
             if afterRan then error("After test group ran before this test") end
         end
         tg.tests.incomplete = {
-            {run = stubTestRunFunc, state = "succeeded"}
+            test1 = {run = stubTestRunFunc, state = "succeeded"}
         }
         tg.state = "running"
         tg:run()
@@ -426,7 +426,7 @@ return function()
         Assert.assert_equals("completed", tg.state, "State after run is invalid")
         Assert.assert_true(tg.done, "Done value is invalid after run")
         Assert.assert_true(afterRan, "After function did not run")
-        Assert.assert_equals(0, #tg.tests.incomplete, "Failed validation for count of incomplete tests")
+        Assert.assert_equals(0, table_size(tg.tests.incomplete), "Failed validation for count of incomplete tests")
         Assert.assert_equals(1, #tg.tests.succeeded, "Failed validation for count of succeeded tests")
         Assert.assert_equals(0, #tg.tests.skipped, "Failed validation for count of skipped tests")
         Assert.assert_equals(0, #tg.tests.failed, "Failed validation for count of failed tests")
@@ -441,7 +441,7 @@ return function()
             if afterRan then error("After test group ran before this test") end
         end
         tg.tests.incomplete = {
-            {run = stubTestRunFunc, state = "skipped"}
+            test1 = {run = stubTestRunFunc, state = "skipped"}
         }
         tg.state = "running"
         tg:run()
@@ -449,7 +449,7 @@ return function()
         Assert.assert_equals("completed", tg.state, "State after run is invalid")
         Assert.assert_true(tg.done, "Done value is invalid after run")
         Assert.assert_true(afterRan, "After function did not run")
-        Assert.assert_equals(0, #tg.tests.incomplete, "Failed validation for count of incomplete tests")
+        Assert.assert_equals(0, table_size(tg.tests.incomplete), "Failed validation for count of incomplete tests")
         Assert.assert_equals(0, #tg.tests.succeeded, "Failed validation for count of succeeded tests")
         Assert.assert_equals(1, #tg.tests.skipped, "Failed validation for count of skipped tests")
         Assert.assert_equals(0, #tg.tests.failed, "Failed validation for count of failed tests")
@@ -464,7 +464,7 @@ return function()
             if afterRan then error("After test group ran before this test") end
         end
         tg.tests.incomplete = {
-            {run = stubTestRunFunc, state = "failed"}
+            test1 = {run = stubTestRunFunc, state = "failed"}
         }
         tg.state = "running"
         tg:run()
@@ -472,7 +472,7 @@ return function()
         Assert.assert_equals("completed", tg.state, "State after run is invalid")
         Assert.assert_true(tg.done, "Done value is invalid after run")
         Assert.assert_true(afterRan, "After function did not run")
-        Assert.assert_equals(0, #tg.tests.incomplete, "Failed validation for count of incomplete tests")
+        Assert.assert_equals(0, table_size(tg.tests.incomplete), "Failed validation for count of incomplete tests")
         Assert.assert_equals(0, #tg.tests.succeeded, "Failed validation for count of succeeded tests")
         Assert.assert_equals(0, #tg.tests.skipped, "Failed validation for count of skipped tests")
         Assert.assert_equals(1, #tg.tests.failed, "Failed validation for count of failed tests")
@@ -487,12 +487,12 @@ return function()
             if afterRan then error("After test group ran before this test") end
         end
         tg.tests.incomplete = {
-            {run = stubTestRunFunc, state = "succeeded"},
-            {run = stubTestRunFunc, state = "skipped"},
-            {run = stubTestRunFunc, state = "skipped"},
-            {run = stubTestRunFunc, state = "failed"},
-            {run = stubTestRunFunc, state = "failed"},
-            {run = stubTestRunFunc, state = "failed"}
+            test1 = {run = stubTestRunFunc, state = "succeeded"},
+            test2 = {run = stubTestRunFunc, state = "skipped"},
+            test3 = {run = stubTestRunFunc, state = "skipped"},
+            test4 = {run = stubTestRunFunc, state = "failed"},
+            test5 = {run = stubTestRunFunc, state = "failed"},
+            test6 = {run = stubTestRunFunc, state = "failed"}
         }
         tg.state = "running"
         tg:run()
@@ -500,7 +500,7 @@ return function()
         Assert.assert_equals("completed", tg.state, "State after run is invalid")
         Assert.assert_true(tg.done, "Done value is invalid after run")
         Assert.assert_true(afterRan, "After function did not run")
-        Assert.assert_equals(0, #tg.tests.incomplete, "Failed validation for count of incomplete tests")
+        Assert.assert_equals(0, table_size(tg.tests.incomplete), "Failed validation for count of incomplete tests")
         Assert.assert_equals(1, #tg.tests.succeeded, "Failed validation for count of succeeded tests")
         Assert.assert_equals(2, #tg.tests.skipped, "Failed validation for count of skipped tests")
         Assert.assert_equals(3, #tg.tests.failed, "Failed validation for count of failed tests")
@@ -541,11 +541,11 @@ return function()
     -- Test_Group.skip_tests() validations
     add_validation("skip_tests__two_tests", function()
         local tg = Test_Group.create({tests = {{}, {}}})
-        Assert.assert_equals(2, #tg.tests.incomplete, "Failed pre-validation of incomplete tests")
+        Assert.assert_equals(2, table_size(tg.tests.incomplete), "Failed pre-validation of incomplete tests")
         tg:skip_tests()
 
         Assert.assert_equals(2, #tg.tests.skipped, "Skipped tests not in skipped table")
-        Assert.assert_equals(0, #tg.tests.incomplete, "Tests are still in incomplete table")
+        Assert.assert_equals(0, table_size(tg.tests.incomplete), "Tests are still in incomplete table")
         for _, t in ipairs(tg.tests.skipped) do
             Assert.assert_starts_with("Test group skipped", t.error, "Failed validation for test error reason")
             Assert.assert_starts_with("skipped", t.state, "Failed validation for test state")
