@@ -38,9 +38,9 @@ return function()
         local name = "test_group"
         Test_Runner.add_test(test, name)
 
-        Assert.assert_equals(1, #Test_Runner.ALL_TEST_GROUPS.incomplete, "Count of incomplete test groups mismatch")
+        Assert.assert_equals(1, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
 
-        local testGroup = Test_Runner.ALL_TEST_GROUPS.incomplete[1]
+        local testGroup = Test_Runner.ALL_TEST_GROUPS.incomplete[name]
         Assert.assert_equals("Test_Group", testGroup.__which, "Test group was not created correctly: " .. serpent.line(testGroup))
         Assert.assert_equals(name, testGroup.name, "Test group name mismatch")
         Assert.assert_equals(1, table_size(testGroup.tests.incomplete), "Test group tests count mismatch")
@@ -55,9 +55,9 @@ return function()
         local name = "test_group"
         Test_Runner.add_test_group({name = name, tests = {test}})
 
-        Assert.assert_equals(1, #Test_Runner.ALL_TEST_GROUPS.incomplete, "Count of incomplete test groups mismatch")
+        Assert.assert_equals(1, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
 
-        local testGroup = Test_Runner.ALL_TEST_GROUPS.incomplete[1]
+        local testGroup = Test_Runner.ALL_TEST_GROUPS.incomplete[name]
         Assert.assert_equals("Test_Group", testGroup.__which, "Test group was not created correctly: " .. serpent.line(testGroup))
         Assert.assert_equals(name, testGroup.name, "Test group name mismatch")
         Assert.assert_equals(1, table_size(testGroup.tests.incomplete), "Test group tests count mismatch")
@@ -68,8 +68,8 @@ return function()
         local test_group = Test_Group.create({name = name})
         Test_Runner.add_test_group(test_group)
 
-        Assert.assert_equals(1, #Test_Runner.ALL_TEST_GROUPS.incomplete, "Count of incomplete test groups mismatch")
-        Assert.assert_equals(test_group, Test_Runner.ALL_TEST_GROUPS.incomplete[1], "Test group mismatch (expected no-op)")
+        Assert.assert_equals(1, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
+        Assert.assert_equals(test_group, Test_Runner.ALL_TEST_GROUPS.incomplete[name], "Test group mismatch (expected no-op)")
     end)
 
 
@@ -139,7 +139,7 @@ return function()
         Test_Runner.run()
 
         Assert.assert_true(testRan, "Test was not run by group")
-        Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.incomplete, "Count of incomplete test groups mismatch")
+        Assert.assert_equals(0, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
         Assert.assert_equals(1, #Test_Runner.ALL_TEST_GROUPS.completed, "Count of completed test groups mismatch")
         Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.skipped, "Count of skipped test groups mismatch")
         Assert.assert_equals(0, Test_Runner.ALL_TEST_GROUPS_COUNTS.failed, "Failed count mismatch")
@@ -150,7 +150,7 @@ return function()
         Test_Runner.add_test_group({tests = {function() error("i failed") end}})
         Test_Runner.run()
 
-        Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.incomplete, "Count of incomplete test groups mismatch")
+        Assert.assert_equals(0, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
         Assert.assert_equals(1, #Test_Runner.ALL_TEST_GROUPS.completed, "Count of completed test groups mismatch")
         Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.skipped, "Count of skipped test groups mismatch")
         Assert.assert_equals(1, Test_Runner.ALL_TEST_GROUPS_COUNTS.failed, "Failed count mismatch")
@@ -162,7 +162,7 @@ return function()
         Test_Runner.add_test_group({tests = {function() error("i failed") end}})
         Test_Runner.run()
 
-        Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.incomplete, "Count of incomplete test groups mismatch")
+        Assert.assert_equals(0, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
         Assert.assert_equals(2, #Test_Runner.ALL_TEST_GROUPS.completed, "Count of completed test groups mismatch")
         Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.skipped, "Count of skipped test groups mismatch")
         Assert.assert_equals(1, Test_Runner.ALL_TEST_GROUPS_COUNTS.failed, "Failed count mismatch")
@@ -173,8 +173,8 @@ return function()
 
     -- Test_Runner.adjust_group() validations
     add_validation("adjust_group__synthetic_completed", function()
-        Test_Runner.add_test_group({})
-        local tg = Test_Runner.ALL_TEST_GROUPS.incomplete[1]
+        Test_Runner.add_test_group({name = "tg"})
+        local tg = Test_Runner.ALL_TEST_GROUPS.incomplete["tg"]
         tg.state = "completed"
         tg.done = true
         tg.tests.failed = {{}}
@@ -182,8 +182,7 @@ return function()
         tg.tests.skipped = {{}, {}, {}}
 
         Test_Runner.adjust_group(tg)
-        -- Still in incomplete because of current logic
-        Assert.assert_equals(1, #Test_Runner.ALL_TEST_GROUPS.incomplete, "Count of incomplete test groups mismatch")
+        Assert.assert_equals(0, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
         Assert.assert_equals(1, #Test_Runner.ALL_TEST_GROUPS.completed, "Count of completed test groups mismatch")
         Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.skipped, "Count of skipped test groups mismatch")
         Assert.assert_equals_exactly(tg, Test_Runner.ALL_TEST_GROUPS.completed[1], "Test group not found in completed bucket")
@@ -192,8 +191,8 @@ return function()
         Assert.assert_equals(3, Test_Runner.ALL_TEST_GROUPS_COUNTS.skipped, "Skipped count mismatch")
     end)
     add_validation("adjust_group__synthetic_skipped", function()
-        Test_Runner.add_test_group({})
-        local tg = Test_Runner.ALL_TEST_GROUPS.incomplete[1]
+        Test_Runner.add_test_group({name = "tg"})
+        local tg = Test_Runner.ALL_TEST_GROUPS.incomplete["tg"]
         tg.state = "skipped"
         tg.done = true
         tg.tests.failed = {{}, {}, {}, {}}
@@ -201,8 +200,7 @@ return function()
         tg.tests.skipped = {{}, {}, {}, {}, {}, {}}
 
         Test_Runner.adjust_group(tg)
-        -- Still in incomplete because of current logic
-        Assert.assert_equals(1, #Test_Runner.ALL_TEST_GROUPS.incomplete, "Count of incomplete test groups mismatch")
+        Assert.assert_equals(0, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
         Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.completed, "Count of completed test groups mismatch")
         Assert.assert_equals(1, #Test_Runner.ALL_TEST_GROUPS.skipped, "Count of skipped test groups mismatch")
         Assert.assert_equals_exactly(tg, Test_Runner.ALL_TEST_GROUPS.skipped[1], "Test group not found in skipped bucket")
