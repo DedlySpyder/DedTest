@@ -418,7 +418,7 @@ return function()
             if afterRan then error("After test group ran before this test") end
         end
         tg.tests.incomplete = {
-            test1 = {run = stubTestRunFunc, state = "succeeded"}
+            test1 = {run = stubTestRunFunc, state = "succeeded", done = true}
         }
         tg.state = "running"
         tg:run()
@@ -441,7 +441,7 @@ return function()
             if afterRan then error("After test group ran before this test") end
         end
         tg.tests.incomplete = {
-            test1 = {run = stubTestRunFunc, state = "skipped"}
+            test1 = {run = stubTestRunFunc, state = "skipped", done = true}
         }
         tg.state = "running"
         tg:run()
@@ -464,7 +464,7 @@ return function()
             if afterRan then error("After test group ran before this test") end
         end
         tg.tests.incomplete = {
-            test1 = {run = stubTestRunFunc, state = "failed"}
+            test1 = {run = stubTestRunFunc, state = "failed", done = true}
         }
         tg.state = "running"
         tg:run()
@@ -487,12 +487,12 @@ return function()
             if afterRan then error("After test group ran before this test") end
         end
         tg.tests.incomplete = {
-            test1 = {run = stubTestRunFunc, state = "succeeded"},
-            test2 = {run = stubTestRunFunc, state = "skipped"},
-            test3 = {run = stubTestRunFunc, state = "skipped"},
-            test4 = {run = stubTestRunFunc, state = "failed"},
-            test5 = {run = stubTestRunFunc, state = "failed"},
-            test6 = {run = stubTestRunFunc, state = "failed"}
+            test1 = {run = stubTestRunFunc, state = "succeeded", done = true},
+            test2 = {run = stubTestRunFunc, state = "skipped", done = true},
+            test3 = {run = stubTestRunFunc, state = "skipped", done = true},
+            test4 = {run = stubTestRunFunc, state = "failed", done = true},
+            test5 = {run = stubTestRunFunc, state = "failed", done = true},
+            test6 = {run = stubTestRunFunc, state = "failed", done = true}
         }
         tg.state = "running"
         tg:run()
