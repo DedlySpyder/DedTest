@@ -125,6 +125,26 @@ return function()
     )
 
 
+    -- Test_Runner.on_tick() validations
+    add_validation("on_tick__basic_usage", function()
+        Test_Runner.add_test_group({tests = {}})
+        Assert.assert_false(Test_Runner.done, "Pre-run done check failed")
+        Test_Runner.on_tick()
+        Assert.assert_true(Test_Runner.done, "Done value not expected")
+    end)
+    add_validation("on_tick__multi_tick", function()
+        local testFuncReturn = false
+        Test_Runner.add_test_group({tests = {function() return testFuncReturn end}})
+        Assert.assert_false(Test_Runner.done, "Pre-run done check failed")
+        Test_Runner.on_tick()
+        Assert.assert_false(Test_Runner.done, "Done value not expected, still running")
+
+        testFuncReturn = true
+        Test_Runner.on_tick()
+        Assert.assert_true(Test_Runner.done, "Done value not expected")
+    end)
+
+
     -- Test_Runner.run() validations
     add_validation("run__calls_run_method", function()
         local groupRan = false
@@ -157,12 +177,37 @@ return function()
         Assert.assert_equals(0, Test_Runner.ALL_TEST_GROUPS_COUNTS.succeeded, "Succeeded count mismatch")
         Assert.assert_equals(0, Test_Runner.ALL_TEST_GROUPS_COUNTS.skipped, "Skipped count mismatch")
     end)
+    add_validation("run__natural_basic_one_still_running", function()
+        local testFuncReturn = false
+        Test_Runner.add_test_group({tests = {function() return testFuncReturn end}})
+        local stillRunning = Test_Runner.run()
+
+        Assert.assert_equals(1, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
+        Assert.assert_equals(1, stillRunning, "Count returned still running count test groups mismatch")
+        Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.completed, "Count of completed test groups mismatch")
+        Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.skipped, "Count of skipped test groups mismatch")
+        Assert.assert_equals(0, Test_Runner.ALL_TEST_GROUPS_COUNTS.failed, "Failed count mismatch")
+        Assert.assert_equals(0, Test_Runner.ALL_TEST_GROUPS_COUNTS.succeeded, "Succeeded count mismatch")
+        Assert.assert_equals(0, Test_Runner.ALL_TEST_GROUPS_COUNTS.skipped, "Skipped count mismatch")
+
+        testFuncReturn = true
+        stillRunning = Test_Runner.run()
+
+        Assert.assert_equals(0, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
+        Assert.assert_equals(0, stillRunning, "Count returned still running count test groups mismatch")
+        Assert.assert_equals(1, #Test_Runner.ALL_TEST_GROUPS.completed, "Count of completed test groups mismatch")
+        Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.skipped, "Count of skipped test groups mismatch")
+        Assert.assert_equals(0, Test_Runner.ALL_TEST_GROUPS_COUNTS.failed, "Failed count mismatch")
+        Assert.assert_equals(1, Test_Runner.ALL_TEST_GROUPS_COUNTS.succeeded, "Succeeded count mismatch")
+        Assert.assert_equals(0, Test_Runner.ALL_TEST_GROUPS_COUNTS.skipped, "Skipped count mismatch")
+    end)
     add_validation("run__natural_basic_one_of_each", function()
         Test_Runner.add_test_group({tests = {function() end}})
         Test_Runner.add_test_group({tests = {function() error("i failed") end}})
+        Test_Runner.add_test_group({tests = {function() return false end}})
         Test_Runner.run()
 
-        Assert.assert_equals(0, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
+        Assert.assert_equals(1, table_size(Test_Runner.ALL_TEST_GROUPS.incomplete), "Count of incomplete test groups mismatch")
         Assert.assert_equals(2, #Test_Runner.ALL_TEST_GROUPS.completed, "Count of completed test groups mismatch")
         Assert.assert_equals(0, #Test_Runner.ALL_TEST_GROUPS.skipped, "Count of skipped test groups mismatch")
         Assert.assert_equals(1, Test_Runner.ALL_TEST_GROUPS_COUNTS.failed, "Failed count mismatch")
