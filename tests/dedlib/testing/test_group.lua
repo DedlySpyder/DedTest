@@ -477,6 +477,47 @@ return function()
         Assert.assert_equals(0, #tg.tests.skipped, "Failed validation for count of skipped tests")
         Assert.assert_equals(1, #tg.tests.failed, "Failed validation for count of failed tests")
     end)
+    add_validation("run__running_tests_multi_tick", function()
+        local afterRan = false
+        local completeTest = false
+        local tg = Test_Group.create({
+            tests = {},
+            after = function() afterRan = true end
+        })
+        local stubTestRunFunc = function(self)
+            if afterRan then error("After test group ran before this test") end
+            if completeTest then
+                self.state = "succeeded"
+                self.done = true
+            end
+        end
+        tg.tests.incomplete = {
+            test1 = {run = stubTestRunFunc, state = "running"}
+        }
+        tg.state = "running"
+        local stillRunning = tg:run()
+
+        Assert.assert_equals("running", tg.state, "State after run is invalid, still running")
+        Assert.assert_equals(1, stillRunning, "Still running count after run is invalid, still running")
+        Assert.assert_false(tg.done, "Done value is invalid after run, still running")
+        Assert.assert_false(afterRan, "After function did not run, still running")
+        Assert.assert_equals(1, table_size(tg.tests.incomplete), "Failed validation for count of incomplete tests, still running")
+        Assert.assert_equals(0, #tg.tests.succeeded, "Failed validation for count of succeeded tests, still running")
+        Assert.assert_equals(0, #tg.tests.skipped, "Failed validation for count of skipped tests, still running")
+        Assert.assert_equals(0, #tg.tests.failed, "Failed validation for count of failed tests, still running")
+
+        completeTest = true
+        stillRunning = tg:run()
+
+        Assert.assert_equals("completed", tg.state, "State after run is invalid")
+        Assert.assert_equals(0, stillRunning, "Still running count after run is invalid")
+        Assert.assert_true(tg.done, "Done value is invalid after run")
+        Assert.assert_true(afterRan, "After function did not run")
+        Assert.assert_equals(0, table_size(tg.tests.incomplete), "Failed validation for count of incomplete tests")
+        Assert.assert_equals(1, #tg.tests.succeeded, "Failed validation for count of succeeded tests")
+        Assert.assert_equals(0, #tg.tests.skipped, "Failed validation for count of skipped tests")
+        Assert.assert_equals(0, #tg.tests.failed, "Failed validation for count of failed tests")
+    end)
     add_validation("run__running_tests_mixed_bag", function()
         local afterRan = false
         local tg = Test_Group.create({
