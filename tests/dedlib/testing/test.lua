@@ -740,6 +740,27 @@ return function()
         Assert.assert_ends_with(errorMessage, test.error, "Failed validation for run error value")
         Assert.assert_true(afterRan, "After function did not run")
     end)
+    add_validation("run__running_multi_tick", function()
+        local afterRan = false
+        local funcReturn = false
+        local test = Test.create({func = function() return funcReturn end, after = function() afterRan = true end})
+        test.state = "running"
+        test.running = true
+        test:run()
+
+        Assert.assert_equals("running", test.state, "Failed validation for run state value, still running")
+        Assert.assert_true(test.running, "Failed validation for run running value, still running")
+        Assert.assert_false(test.done, "Failed validation for run done value, still running")
+        Assert.assert_false(afterRan, "After function did not run, still running")
+
+        funcReturn = true
+        test:run()
+
+        Assert.assert_equals("succeeded", test.state, "Failed validation for run state value")
+        Assert.assert_false(test.running, "Failed validation for run running value")
+        Assert.assert_true(test.done, "Failed validation for run done value")
+        Assert.assert_true(afterRan, "After function did not run")
+    end)
     add_validation("run__pending", function()
         local beforeRan = false
         local generatedArgsRan = false
