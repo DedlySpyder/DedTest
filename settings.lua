@@ -5,7 +5,7 @@ data:extend({
 		type = "string-setting",
 		setting_type = "runtime-global",
 		default_value = "off",
-		allowed_values = {"off", "dedlib"},
+		allowed_values = {"off", "dedlib", "avatars"},
 		order = "000"
 	}
 })
